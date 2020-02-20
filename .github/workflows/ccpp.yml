@@ -13,7 +13,6 @@ jobs:
       run: mkdir build && cd build && cmake ..
     - name: make
       run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
+    - name: exec
+      run: ./raii
+
