@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 project(cpp_examples)
 # TODO: add flag to disable analysis
 if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werrors")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
 endif()
 set(CMAKE_CXX_FLAGS "-WAll -Werrors")
 set(CMAKE_CXX_STANDARD 14)
