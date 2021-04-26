@@ -7,7 +7,7 @@ class Elf{
     //Elf(Elf &other): id(other.id){
     //}
     public:
-    Elf(int _id):id(_id){
+    explicit Elf(int _id):id(_id){
         std::cout << "new elf    (" << id << ")." << " \taddr " << this <<std::endl;
     }
     Elf (Elf const& other):id(other.id){
@@ -16,15 +16,15 @@ class Elf{
         std::cout << "killed elf (" << id << ")." << " \taddr " << 
            this << std::endl ;
     }
-    std::string toString(){
+    auto toString() -> std::string{
         std::stringstream ss;
         ss << id;
         return ss.str();
     }
 };
-int main(int argc, char *argv[])
+auto main(int argc, char *argv[]) -> int
 {
-    typedef std::unique_ptr<Elf> ePtr;
+    //typedef std::unique_ptr<Elf> ePtr;
     std::vector<std::unique_ptr<Elf>> plist;
     Elf *myelf = new Elf(400);
     plist.push_back(std::unique_ptr<Elf>(myelf));
@@ -35,14 +35,14 @@ int main(int argc, char *argv[])
     std::vector<Elf> elfbox;
     Elf e{312};
     std::cout << "creating two elves"<<std::endl;
-    elfbox.push_back( Elf(2)); //requires public elf copy contructor for some reason.
+    elfbox.emplace_back(2); // use emplace_back since push_back calls copy constructor.
     elfbox.push_back(e);
     //elfbox.push_back( Elf(3));
     //elfbox.push_back(Elf(199));
     int i=0;
-    for (auto& e:plist){
-        std::cout << "plist["<<i<<"] "<< e->toString() << std::endl;
-        //std::cout<<e.toString()<<":";//std::endl;
+    for (auto& _e:plist){
+        std::cout << "plist[" << i << "] " << _e->toString() << std::endl;
+        //std::cout<<_e.toString()<<":";//std::endl;
         ++i;
     }
     std::cout <<std::endl;
