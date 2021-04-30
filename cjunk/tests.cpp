@@ -54,6 +54,6 @@ TEST(tests, iostreamContainer){
 }
 
 TEST(tests, test1){
-    std::clog << "startying test1" <<std::endl;
+    std::clog << "starting test1" <<std::endl;
     ASSERT_TRUE(false);
 }
