@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 # download gtt if it is not already avaiable
 #find_package(GTest OPTIONAL)
+#consider supporting older cmake by using ExternalProject_Add(URL [])
 include(FetchContent)
 FetchContent_Declare(
       googletest
