@@ -6,7 +6,7 @@ enable_testing()
 set(CMAKE_CXX_STANDARD 17)
 
 # download gtt if it is not already avaiable
-#find_package(GTest OPTIONAL)
+#find_package(GTest REQUIRED)
 FetchContent_Declare(
     Boost
     URL "https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz")
