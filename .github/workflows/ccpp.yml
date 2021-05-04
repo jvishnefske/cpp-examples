@@ -2,15 +2,13 @@ name: C/C++ CI
 
 on: [push]
 
-jobs:
+jobs: 
   build:
-
     runs-on: ubuntu-latest
-    
     steps:
     - uses: actions/checkout@v2
     - name: apt
-      run: sudo apt-get -y install googletest
+      run: sudo apt-get -y install googletest cppcheck clang-tidy libboost-dev
     - name: cmake
       run: mkdir build && cd build && cmake ..
     - name: make
