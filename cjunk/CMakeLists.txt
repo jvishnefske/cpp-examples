@@ -25,12 +25,20 @@ FetchContent_Declare(
     # For Windows: Prevent overriding the parent project's compiler/linker settings
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(GTest)
-find_package(GTest REQUIRED)
-include(GoogleTest)
-add_library(GTest::gtest_main ALIAS gtest_main)
-add_executable(testJunk main.cpp)
-target_link_libraries(testJunk GTest::gtest_main)
-add_test(AllTestsInCJunk testJunk)
+find_package(GTest OPTIONAL)
+if(GTEST_FOUND)
+    include(GoogleTest)
+    add_library(GTest::gtest_main ALIAS gtest_main)
+    add_executable(testJunk main.cpp)
+    target_link_libraries(testJunk GTest::gtest_main)
+    add_test(AllTestsInCJunk testJunk)
+    add_executable(esp_audioTest tests.cpp)
+    target_compile_options(esp_audioTest PRIVATE -Werror)
+    find_package(GTest REQUIRED)
+    target_link_libraries(esp_audioTest GTest::gtest_main)
+    target_link_libraries(esp_audioTest Boost::iostreams)
+endif()
+
 
 project(esp_audio)
 
@@ -41,11 +49,3 @@ project(esp_audio)
 #message("boost root ${BOOST_ROOT}")
 find_package(Boost COMPONENTS thread iostreams filesystem REQUIRED)
 #chrono iostreams)
-
-add_executable(esp_audioTest tests.cpp)
-#target_link_libraries(esp_audio Boost::headers)
-target_compile_options(esp_audioTest PRIVATE -Werror)
-
-find_package(GTest REQUIRED)
-target_link_libraries(esp_audioTest GTest::gtest_main)
-target_link_libraries(esp_audioTest Boost::iostreams)
