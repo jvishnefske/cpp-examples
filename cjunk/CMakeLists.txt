@@ -12,7 +12,7 @@ FetchContent_Declare(
     URL "https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz")
 #HASH sha256=7bd7ddceec1a1dfdcbdb3e609b60d01739c38390a5f956385a12f3122049f0ca
 
-FetchContent_MakeAvailable(Boost)
+#FetchContent_MakeAvailable(Boost)
 #for windows
 #URL https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.zip
 
@@ -24,7 +24,7 @@ FetchContent_Declare(
         )
     # For Windows: Prevent overriding the parent project's compiler/linker settings
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    FetchContent_MakeAvailable(GTest)
+    #FetchContent_MakeAvailable(GTest)
 find_package(GTest)
 if(GTEST_FOUND)
     include(GoogleTest)
