@@ -9,6 +9,8 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
+    - name: apt
+      run: sudo apt-get -y install googletest
     - name: cmake
       run: mkdir build && cd build && cmake ..
     - name: make
