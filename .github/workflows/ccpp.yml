@@ -12,7 +12,7 @@ jobs:
     - name: cmake
       run: mkdir build && cd build && cmake ..
     - name: make
-      run: make
+      run: cmake --build build
     - name: exec
-      run: ./raii
+      run: ./build/raii
 
