@@ -25,7 +25,7 @@ FetchContent_Declare(
     # For Windows: Prevent overriding the parent project's compiler/linker settings
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(GTest)
-find_package(GTest OPTIONAL)
+find_package(GTest)
 if(GTEST_FOUND)
     include(GoogleTest)
     add_library(GTest::gtest_main ALIAS gtest_main)
