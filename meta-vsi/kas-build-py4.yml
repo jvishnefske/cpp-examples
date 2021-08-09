@@ -18,20 +18,23 @@ repos:
             meta:
             meta-poky:
             meta-yocto-bsp:
-    # meta-openembeded:
-    #     url: https://git.openembedded.org/meta-openembedded
-    #     path: layers/meta-openembeded
-    #     refspec: master
-    #     layers:
-    #         # meta-oe:
-    #         meta-python:
-    # meta-ros:
-    #     url: https://github.com/ros/meta-ros.git
-    #     path: layers/meta-ros
-    #     refspec: gatesgarth
-    #     layers:
-    #         meta-ros2-foxy:
-    #         meta-ros2:
+    meta-openembeded:
+        url: https://git.openembedded.org/meta-openembedded
+        path: layers/meta-openembeded
+        refspec: gatesgarth
+        layers:
+            meta-oe:
+            meta-python:
+    # note that foxy officially supports oe gatesgarth (2.6)
+    meta-ros:
+        url: https://github.com/ros/meta-ros.git
+        path: layers/meta-ros
+        refspec: gatesgarth
+        layers:
+            meta-ros2:
+            meta-ros2-foxy:
+            meta-ros-common:
+            meta-ros-backports-hardknott:
 # local_conf_header:
 #     standard:
 #         PACKAGE_CLASSES = "package_rpm"
