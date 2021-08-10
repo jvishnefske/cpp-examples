@@ -4,11 +4,16 @@ import argparse
 import logging
 import datetime
 
+# add the following lines to cmake to produce trace data 
+#set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "/usr/bin/time -v")
+#set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK "/usr/bin/time -v")
+
 logger= logging.getLogger("time2trace")
 goodParts = {
         "cpuTime": "User time (seconds)",
         "memory(kB)": "Maximum resident set size (kbytes)",
         "pageFaults": "Minor (reclaiming a frame) page faults",
+        "inputFileIO": "File system inputs",
         "cmd": "Command being timed",
         }
 sections = dict()
