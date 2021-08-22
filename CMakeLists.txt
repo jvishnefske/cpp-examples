@@ -45,6 +45,5 @@ else()
     set(CMAKE_CXX_CLANG_TIDY "" CACHE STRING "" FORCE) # delete it
 endif()
 
-
 add_executable(raii raii.cc)
-
+add_subdirectory(cjunk)
