@@ -1,0 +1,239 @@
+{
+  "class": "TPV",
+  "device": "/dev/pts/0",
+  "mode": 2,
+  "time": "2021-05-12T15:22:54.000Z",
+  "ept": 0.005,
+  "lat": 37.623781667,
+  "lon": -97.460495000,
+  "epx": 17.649,
+  "epy": 13.755,
+  "track": 0.0000,
+  "speed": 0.000,
+  "eps": 17.65
+}
+{
+  "mode": 3,
+  "time": "2021-05-12T15:22:54.000Z",
+  "ept": 0.005,
+  "lat": 37.623781667,
+  "lon": -97.460495000,
+  "alt": 422.030,
+  "epx": 17.649,
+  "epy": 13.755,
+  "epv": 23.000,
+  "track": 0.0000,
+  "speed": 0.000,  "class": "TPV",
+  "device": "/dev/pts/0",
+
+  "eps": 17.65
+}
+{
+  "class": "SKY",
+  "device": "/dev/pts/0",
+  "xdop": 1.18,
+  "ydop": 0.92,
+  "vdop": 1.00,
+  "tdop": 1.18,
+  "hdop": 0.60,
+  "gdop": 3.03,
+  "pdop": 1.20,
+  "satellites": [
+    {
+      "PRN": 1,
+      "el": 24,
+      "az": 127,
+      "ss": 39,
+      "used": false
+    },
+    {
+      "PRN": 7,
+      "el": 70,
+      "az": 114,
+      "ss": 48,
+      "used": false
+    },
+    {
+      "PRN": 8,
+      "el": 38,
+      "az": 46,
+      "ss": 52,
+      "used": false
+    },
+    {
+      "PRN": 9,
+      "el": 16,
+      "az": 185,
+      "ss": 43,
+      "used": false
+    },
+    {
+      "PRN": 13,
+      "el": 19,
+      "az": 317,
+      "ss": 41,
+      "used": false
+    },
+    {
+      "PRN": 14,
+      "el": 45,
+      "az": 285,
+      "ss": 46,
+      "used": false
+    },
+    {
+      "PRN": 17,
+      "el": 25,
+      "az": 210,
+      "ss": 49,
+      "used": false
+    },
+    {
+      "PRN": 19,
+      "el": 0,
+      "az": 213,
+      "ss": 31,
+      "used": false
+    },
+    {
+      "PRN": 21,
+      "el": 31,
+      "az": 99,
+      "ss": 39,
+      "used": false
+    },
+    {
+      "PRN": 27,
+      "el": 6,
+      "az": 40,
+      "ss": 34,
+      "used": false
+    },
+    {
+      "PRN": 28,
+      "el": 34,
+      "az": 275,
+      "ss": 41,
+      "used": false
+    },
+    {
+      "PRN": 30,
+      "el": 66,
+      "az": 319,
+      "ss": 45,
+      "used": false
+    },
+    {
+      "PRN": 67,
+      "el": 21,
+      "az": 250,
+      "ss": 0,
+      "used": true
+    },
+    {
+      "PRN": 74,
+      "el": 9,
+      "az": 96,
+      "ss": 0,
+      "used": false
+    },
+    {
+      "PRN": 66,
+      "el": 0,
+      "az": 207,
+      "ss": 36,
+      "used": false
+    },
+    {
+      "PRN": 76,
+      "el": 35,
+      "az": 78,
+      "ss": 44,
+      "used": true
+    },
+    {
+      "PRN": 67,
+      "el": 21,
+      "az": 251,
+      "ss": 46,
+      "used": true
+    },
+    {
+      "PRN": 68,
+      "el": 21,
+      "az": 305,
+      "ss": 45,
+      "used": true
+    },
+    {
+      "PRN": 78,
+      "el": 19,
+      "az": 305,
+      "ss": 46,
+      "used": true
+    },
+    {
+      "PRN": 86,
+      "el": 40,
+      "az": 47,
+      "ss": 0,
+      "used": true
+    },
+    {
+      "PRN": 86,
+      "el": 35,
+      "az": 41,
+      "ss": 42,
+      "used": true
+    },
+    {
+      "PRN": 77,
+      "el": 56,
+      "az": 1,
+      "ss": 39,
+      "used": true
+    },
+    {
+      "PRN": 69,
+      "el": 0,
+      "az": 348,
+      "ss": 32,
+      "used": false
+    },
+    {
+      "PRN": 88,
+      "el": 19,
+      "az": 175,
+      "ss": 47,
+      "used": true
+    },
+    {
+      "PRN": 87,
+      "el": 50,
+      "az": 142,
+      "ss": 49,
+      "used": true
+    },
+    {
+      "PRN": 37,
+      "el": 0,
+      "az": 0,
+      "ss": 0,
+      "used": true
+    },
+    {
+      "PRN": 37,
+      "el": 0,
+      "az": 0,
+      "ss": 0,
+      "used": true
+    },
+    {
+      "PRN": 37,
+      "el": 0,
+      "az": 0,
+      "ss": 0,
+      "used": true
+    }
+  ]
+}

@@ -2,17 +2,17 @@ name: C/C++ CI
 
 on: [push]
 
-jobs:
+jobs: 
   build:
-
     runs-on: ubuntu-latest
-    
     steps:
     - uses: actions/checkout@v2
+    - name: apt
+      run: sudo apt-get -y install googletest cppcheck clang-tidy libboost-iostreams-dev libboost-filesystem-dev libboost-thread-dev
     - name: cmake
       run: mkdir build && cd build && cmake ..
     - name: make
-      run: make
+      run: cmake --build build
     - name: exec
-      run: ./raii
+      run: ./build/raii
 
