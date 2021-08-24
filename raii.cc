@@ -22,7 +22,7 @@ class Elf{
         return ss.str();
     }
 };
-auto main(int argc, char *argv[]) -> int
+auto main() -> int
 {
     //typedef std::unique_ptr<Elf> ePtr;
     std::vector<std::unique_ptr<Elf>> plist;
