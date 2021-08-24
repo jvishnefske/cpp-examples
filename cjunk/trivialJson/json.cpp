@@ -1,5 +1,4 @@
 #include <json.hpp>
-#include <variant>
 #include <algorithm>
 #include <ostream>
 #include <sstream>
@@ -12,9 +11,9 @@
 // todo make constexpr operator""json
 // todo is it possble to use compile time schemas and create node.member which links to {"member": value}
 struct JsonVisitor: Node {
-    std::string operator()  ( std::vector<Node> o)const{
+    std::string operator()  ( const std::vector<Node> o)const{
         std::ostringstream oss;
-        //oss << "[";
+        oss << "[";
         bool first = true;
         for(auto _o: o){
             if (first){
@@ -22,7 +21,7 @@ struct JsonVisitor: Node {
             }else{
                 oss << ",";
             }
-            _o.visit(*this);
+            oss << _o.visit(*this);
             //oss << std::visit(*this, _o._storage);
         }
         oss << "]";
