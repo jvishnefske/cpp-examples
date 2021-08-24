@@ -1,35 +1,60 @@
 #include <variant>
 #include <iosfwd>
-#include <sstream>
+//#include <sstream>
 #include <string>
 #include <vector>
 #include <cctype>
+#include <functional>
 
 
-struct JsonNode{
-    using Object = std::variant<std::string, int64_t, double,std::vector< JsonNode > >;
-    Object object;
+struct Node{
+    using Storage = std::variant<uint64_t, double, std::string, std::vector<Node> >;
+
+    template<typename T, std::enable_if_t< std::is_convertible_v<T, Storage>, bool> = true >
+    explicit Node(T obj): _storage(obj) {}
+
+    template<typename Integer, std::enable_if_t< std::is_integral<Integer>::value, bool> = true>
+    explicit Node(Integer i): _storage{static_cast<int64_t>(i)} {}
+
+
+    template<typename ...Args,
+    // check if each type is constructable
+     std::enable_if_t<(... && std::is_constructible_v<Args>)> = true
+             >
+    explicit Node(Args ... args){
+        auto generator = [](auto arg){return Node(arg);};
+        std::vector<Node> container{ {generator(args) ...} };
+        _storage = container;
+    }
+
+    explicit Node() = default;
+
+    /**
+     * consider using auto parameter pack deduction to reduce template
+     * @tparam Args
+     * @param thingies
+     * todo: add concept, or type qualifier
+     */
+//    template<typename ...Args>
+//    Node(Args const & ... thingies);
+    //
+    template<typename Visitor>
+    auto visit(Visitor v){
+        return std::visit(v, _storage);
+    }
     std::string serialize();
+protected:
+    Storage _storage;
 };
 
-template<typename Integer, std::enable_if_t< std::is_integral<Integer>::value, bool> = true>
-JsonNode generator(Integer i){
-    JsonNode j;
-    j.object = static_cast<int64_t>(i);
-    return j;
-}
+// how to differentiate serialization methods
+std::ostream& operator<<(std::ostream &os, const Node &obj);
 
-template<typename T,std::enable_if_t< std::is_convertible<T, JsonNode::Object>::value, bool> = true >
-JsonNode generator(T thingy){
-    JsonNode j;
-    j.object = thingy;
-    return j;
-}
 
-template<typename ...Args>
-JsonNode generator(Args const & ... thingies){
-    JsonNode j;
-    std::vector<JsonNode> container{ {generator(thingies) ...} };
-    j.object = container;
-    return j;
-}
+//struct JsonNode{
+//    using Object = std::variant<std::string, int64_t, double,std::vector< JsonNode > >;
+//    Object object;
+//    std::string serialize();
+//};
+
+

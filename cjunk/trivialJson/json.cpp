@@ -1,6 +1,8 @@
 #include <json.hpp>
 #include <variant>
 #include <algorithm>
+#include <ostream>
+#include <sstream>
 
 // todo: add operator<< for each serialization type bson, json, etc.
 // todo convert generators to trivial constructors
@@ -9,10 +11,10 @@
 // todo consider adding bson types where they make sense for other serialization methods decimal128 datetime in milliseconds
 // todo make constexpr operator""json
 // todo is it possble to use compile time schemas and create node.member which links to {"member": value}
-struct JsonVisitor {
-    std::string operator()  ( std::vector<JsonNode> o)const{
+struct JsonVisitor: Node {
+    std::string operator()  ( std::vector<Node> o)const{
         std::ostringstream oss;
-        oss << "[";
+        //oss << "[";
         bool first = true;
         for(auto _o: o){
             if (first){
@@ -20,7 +22,8 @@ struct JsonVisitor {
             }else{
                 oss << ",";
             }
-            oss << std::visit(*this, _o.object);
+            _o.visit(*this);
+            //oss << std::visit(*this, _o._storage);
         }
         oss << "]";
         return oss.str();
@@ -34,7 +37,14 @@ struct JsonVisitor {
     }
 };
 
-std::string JsonNode::serialize(){
+std::ostream& operator<<(std::ostream &os, Node object) {
     JsonVisitor v;
-    return std::visit(v, object);
+    os << object.visit(v);
+    return os;
+}
+
+std::string Node::serialize() {
+    std::ostringstream oss;
+    oss << this;
+    return oss.str();
 }
