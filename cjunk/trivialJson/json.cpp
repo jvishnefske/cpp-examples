@@ -38,13 +38,12 @@ struct JsonVisitor: Node {
 };
 
 std::ostream& operator<<(std::ostream &os, Node object) {
-    JsonVisitor v;
-    os << object.visit(v);
+    os << object.serialize();
     return os;
 }
 
 std::string Node::serialize() {
     std::ostringstream oss;
-    oss << this;
-    return oss.str();
+    JsonVisitor v;
+    return visit(v);
 }

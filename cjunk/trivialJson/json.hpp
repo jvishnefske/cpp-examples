@@ -1,6 +1,5 @@
 #include <variant>
 #include <iosfwd>
-//#include <sstream>
 #include <string>
 #include <vector>
 #include <cctype>
@@ -8,22 +7,22 @@
 
 
 struct Node{
-    using Storage = std::variant<uint64_t, double, std::string, std::vector<Node> >;
+    using Storage = std::variant<std::string, int64_t, double, std::vector<Node> >;
 
     template<typename T, std::enable_if_t< std::is_convertible_v<T, Storage>, bool> = true >
     explicit Node(T obj): _storage(obj) {}
 
-    template<typename Integer, std::enable_if_t< std::is_integral<Integer>::value, bool> = true>
+    template<typename Integer, std::enable_if_t< std::is_integral_v<Integer>, bool> = true>
     explicit Node(Integer i): _storage{static_cast<int64_t>(i)} {}
 
 
-    template<typename ...Args,
+    template<typename ...Args
     // check if each type is constructable
-     std::enable_if_t<(... && std::is_constructible_v<Args>)> = true
+             ,std::enable_if_t<(... && std::is_constructible_v<Node, Args>)> = true
              >
     explicit Node(Args ... args){
         auto generator = [](auto arg){return Node(arg);};
-        std::vector<Node> container{ {generator(args) ...} };
+        std::vector<Node> container{ {Node(args) ...} };
         _storage = container;
     }
 
