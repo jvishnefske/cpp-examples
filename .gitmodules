@@ -1,0 +1,6 @@
+[submodule "vendor-dds/Fast-DDS"]
+	path = vendor-dds/Fast-DDS
+	url = https://github.com/eProsima/Fast-DDS
+[submodule "vendor-dds/foonathan_memory_vendor"]
+	path = vendor-dds/foonathan_memory_vendor
+	url = https://github.com/eProsima/foonathan_memory_vendor
