@@ -3,7 +3,7 @@
 #include <ostream>
 #include <sstream>
 #include <vector>
-//#include <map>
+#include <map>
 #include <string>
 
 
@@ -47,6 +47,13 @@ struct JsonVisitor : Node {
         // note that this will always make std::string::size always return 8 including any optional terminating characters.
         // c_str is used to truncate based on a null terminator which std::string provides.
         return std::string("\"") + std::string(str.data(), str.size()).c_str() + std::string("\"");
+    }
+
+
+    template<typename T, std::enable_if_t<std::is_constructible_v<std::string, T>, bool> = true>
+    std::string operator()(T obj) {
+        std::cout << "constructable" << typeid(obj).name() << std::endl;
+        return std::string(obj);
     }
 
     template<typename T>

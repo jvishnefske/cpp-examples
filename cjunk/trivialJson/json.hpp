@@ -5,9 +5,21 @@
 #include <vector>
 #include <cctype>
 
-
-struct Node{
-    using Storage = std::variant<std::string, int64_t, double, std::vector<Node> >;
+namespace std {
+    //class vector;
+    //class string;
+    //template<typename t...>
+    //class map;
+}
+struct Node {
+    using SmallString = std::array<char, 8>;
+//    using BigString = std::unique_ptr<std::string>;
+//    using Object = std::map<std::string, Node>;
+    //using ObjectPtr = std::unique_ptr<std::map<std::string, Node>>;
+    using List = std::vector<Node>;
+    using ListPtr = std::shared_ptr<List>;
+    // reorder to put something sane for trivial construction.
+    using Storage = std::variant<SmallString, int64_t, double, ListPtr>;
 
 //    template<typename Integer, std::enable_if_t< std::is_integral_v<Integer>, bool> = true>
 //    explicit Node(const Integer i): _storage{static_cast<int64_t>(i)} {}
@@ -15,15 +27,20 @@ struct Node{
     template<typename T, std::enable_if_t< std::is_convertible_v<T, Storage>, bool> = true >
     explicit Node(const T obj): _storage(obj) {}
 
+    // only needed for small strings since char* is not convertable to SmallString
+    template<typename T, std::enable_if_t<std::is_convertible_v<T, std::string>, bool> = true>
+    explicit Node(T obj):_storage(generator(obj)._storage) {}
+
     template<typename ...Args
     // check if each type is constructable
              //,std::enable_if_t<(... && std::is_constructible_v<Node, Args>)> = true
-             >
-    explicit Node(Args  const & ... args){
+    >
+    explicit Node(Args const &... args){
         //auto generator = [](auto arg){return Node(arg);};
-        std::vector<Node> container{ generator(args) ...  };
-        //(  container.push_back(args)  ... );
-        _storage = container;
+        std::vector<Node> container{generator(args) ...};
+        // (  container.push_back(args)  ... );
+        // todo: is there an unnecessary copy here??
+        _storage = std::make_shared<std::vector<Node> >(container);
     }
 
     explicit Node() = default;
