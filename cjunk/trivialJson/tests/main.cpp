@@ -1,5 +1,6 @@
 //#define CATCH_CONFIG_MAIN
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/benchmark/catch_benchmark.hpp>
 #include "json.hpp"
 #include <random>
 #include <array>
@@ -51,7 +52,7 @@ TEST_CASE("round_trip_conversion", "[!mayfail]") {
     for (int i = 0; i < 1000; i = i + 1) {
         auto initial = rand_e(e1);
         std::array<char, 1000> buffer{};
-        sprintf_s(buffer.data(), buffer.size(), "%20.20f", initial);
+        snprintf(buffer.data(), buffer.size(), "%20.20f", initial);
         auto roundTrip = std::stod(std::string(buffer.data()));
         REQUIRE(initial == roundTrip);
     }
