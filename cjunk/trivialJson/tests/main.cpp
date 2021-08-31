@@ -48,7 +48,6 @@ TEST_CASE("round_trip_conversion", "[!mayfail]") {
     std::random_device r;
     std::default_random_engine e1(r());
     std::exponential_distribution<double> rand_e(10.0);
-#pragma omp parallel for
     for (int i = 0; i < 1000; i = i + 1) {
         auto initial = rand_e(e1);
         std::array<char, 1000> buffer{};
