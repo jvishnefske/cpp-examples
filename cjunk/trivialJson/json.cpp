@@ -15,18 +15,15 @@
 // todo make constexpr operator""json
 // todo is it possble to use compile time schemas and create node.member which links to {"member": value}
 struct JsonVisitor : Node {
-    std::string operator()(const List o) {
-#if 0
-        if(!o){
+    std::string operator()(const ListPtr o) {
+        if (!o) {
             // for debugging
-            throw std::runtime_error("nullptr in serialization helper operator()");
             return "nullptr!!!";
         }
-#endif
         std::ostringstream oss;
         oss << "[";
         bool first = true;
-        for (auto _o: o) {
+        for (auto _o: *o) {
             if (first) {
                 first = false;
             } else {
@@ -39,26 +36,17 @@ struct JsonVisitor : Node {
         return oss.str();
     }
 
-    std::string operator()(std::string o) const {
+    std::string operator()(const std::string o) const {
         return std::string("\"") + o + std::string("\"");
     }
 
-
-    //, std::enable_if_t<std::is_same_v<Node::SmallString, CharArray>, bool> = true
-    template<typename CharArray, std::enable_if_t<std::is_same_v<Node::SmallString, CharArray>, bool> = true>
-    std::string operator()(CharArray str) {
+    std::string operator()(const Node::SmallString str) {
         std::cout << "CharArray" << typeid(str).name() << std::endl;
 
         // explicitly specify the string length since str is not always null terminated.
         // note that this will always make std::string::size always return 8 including any optional terminating characters.
+        // c_str is used to truncate based on a null terminator which std::string provides.
         return std::string("\"") + std::string(str.data(), str.size()).c_str() + std::string("\"");
-    }
-
-
-    template<typename T, std::enable_if_t<std::is_constructible_v<std::string, T>, bool> = true>
-    std::string operator()(T obj) {
-        std::cout << "constructable" << typeid(obj).name() << std::endl;
-        return std::string(obj);
     }
 
     template<typename T>

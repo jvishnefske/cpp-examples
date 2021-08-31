@@ -9,7 +9,7 @@ using JsonNode = Node;
 
 TEST_CASE("serialize_float", "jsonTest") {
     JsonNode j(1.1);
-    CHECK(24 >= sizeof(JsonNode)); // we don't want this to increase.
+    CHECK(16 >= sizeof(JsonNode)); // we don't want this to increase.
     REQUIRE(j.serialize().length() > 0);
     CHECK("1.100000" == j.serialize());
 }
