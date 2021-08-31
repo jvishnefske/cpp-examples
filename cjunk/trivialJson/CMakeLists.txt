@@ -11,7 +11,8 @@ list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 
 add_library(trivialJson json.cpp)
 target_include_directories(trivialJson PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-add_executable(jsonTests tests/main.cpp) # tests/benchmark.cpp tests/benchmark.h)
+
+add_executable(jsonTests tests/main.cpp tests/benchmark.h)
 target_link_libraries(jsonTests PRIVATE Catch2::Catch2WithMain trivialJson)
 #if(MSVC and STATIC_ANALYSIS)
 #target_compile_options(jsonTests PRIVATE /fsanitize=address)
