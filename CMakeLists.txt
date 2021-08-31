@@ -32,7 +32,7 @@ if (ENABLE_BENCHMARK)
 
 endif ()
 
-add_executable(raii raii.cc cjunk/ringBuffer.cpp cjunk/ringBuffer.h)
+add_executable(raii raii.cc)
 target_link_libraries(raii PRIVATE Catch2::Catch2WithMain)
 add_test(NAME raii COMMAND $<TARGET_FILE:raii>)
 add_subdirectory(cjunk)
