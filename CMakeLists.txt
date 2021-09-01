@@ -1,7 +1,38 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.19)
 project(cpp_examples)
-include(cmake/lint.cmake)
+option(ENABLE_BENCHMARK "compile benchmark application" OFF)
+set(FETCHCONTENT_QUIET OFF)
+
+# TODO: add to disable analysis
+option(STATIC_ANALYSIS OFF)
+if (MSVC)
+    # Force to always compile with W4
+    if (CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+        string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    else ()
+        add_compile_options(/W4)
+    endif ()
+    add_compile_options(/WX)
+else()
+    # lots of warnings and all warnings as errors
+    add_compile_options(-Wall -Wextra -pedantic -Werror)
+endif ()
+set(CMAKE_CXX_STANDARD 14)
+
+if (STATIC_ANALYSIS)
+    include(cmake/lint.cmake)
+endif ()
+enable_testing()
+include(cmake/catch.cmake)
+set(RAPIDJSON_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/rapidjson/include/")
+if (ENABLE_BENCHMARK)
+    add_library(rapidJson INTERFACE)
+    target_include_directories(rapidJson INTERFACE ${RAPIDJSON_INCLUDE})
+    add_library(rapidJson::rapidJson ALIAS rapidJson)
+
+endif ()
+
 add_executable(raii raii.cc)
+target_link_libraries(raii PRIVATE Catch2::Catch2WithMain)
+add_test(NAME raii COMMAND $<TARGET_FILE:raii>)
 add_subdirectory(cjunk)
-
-

@@ -14,5 +14,5 @@ jobs:
     - name: make
       run: cmake --build build
     - name: exec
-      run: ./build/raii
+      run: cd build && ctest
 

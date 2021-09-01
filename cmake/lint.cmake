@@ -1,9 +1,7 @@
 
-# TODO: add flag to disable analysis
 if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
 endif()
-set(CMAKE_CXX_FLAGS "-Wall -Werror")
 find_program(CPPLINT_EXE "cpplint")
 
 if (CPPLINT_EXE)

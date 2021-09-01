@@ -2,6 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <sstream> //stringstream
+#include <catch2/catch_test_macros.hpp>
 class Elf{
     int id;
     //Elf(Elf &other): id(other.id){
@@ -22,7 +23,7 @@ class Elf{
         return ss.str();
     }
 };
-auto main(int argc, char *argv[]) -> int
+TEST_CASE("elvfObject", "raii")
 {
     //typedef std::unique_ptr<Elf> ePtr;
     std::vector<std::unique_ptr<Elf>> plist;
@@ -51,6 +52,4 @@ auto main(int argc, char *argv[]) -> int
     //elfbox.pop_back();
     plist.pop_back();
     std::cout << "leaving context." << std::endl;
-    return 0;
-
 }
