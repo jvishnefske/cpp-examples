@@ -19,8 +19,8 @@ else ()
     message("populated catch dirs ${catch2_SOURCE_DIR}, ${catch2_BINARY_DIR}, pop: ${catch2_POPULATED}")
 endif ()
 add_subdirectory(${catch2_SOURCE_DIR} ${catch2_BINARY_DIR})
-
+include (${catch2_SOURCE_DIR}/extras/ParseAndAddCatchTests.cmake)
 
 include(CTest)
-#include(Catch2)
+#include(${catch2_BINARY_DIR}/Catch2)
 #include(ParseAndAddCatchTests)

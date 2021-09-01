@@ -16,7 +16,8 @@ target_link_libraries(jsonTests PRIVATE Catch2::Catch2WithMain trivialJson)
 #if(MSVC and STATIC_ANALYSIS)
 #target_compile_options(jsonTests PRIVATE /fsanitize=address)
 #endif()
-#catch_discover_tests(jsonTests)
+#catch_discover_tests(jsonTests TEST_SPEC serialize_float)
+ParseAndAddCatchTests(jsonTests)
 add_test(NAME jsonTests COMMAND $<TARGET_FILE:jsonTests>)
 if (ENABLE_BENCHMARK)
 
@@ -26,3 +27,7 @@ if (ENABLE_BENCHMARK)
     message("rapidjson location ${RAPIDJSON_INCLUDE}")
     target_include_directories(jsonBenchmark PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/rapidjson/include)
 endif ()
+
+target_compile_options(trivialJson PRIVATE
+    -Wall -Wextra -pedantic -Werror
+    )
