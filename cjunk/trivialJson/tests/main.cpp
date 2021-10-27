@@ -56,4 +56,4 @@ TEST_CASE("round_trip_conversion", "[!mayfail]") {
         auto roundTrip = std::stod(std::string(buffer.data()));
         REQUIRE(initial == roundTrip);
     }
-}
+} 
