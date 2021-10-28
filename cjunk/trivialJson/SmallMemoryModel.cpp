@@ -6,11 +6,14 @@
 #include <future>
 #include <map>
 #include <list>
+#include <vector>
+#include <type_traits>
+
 namespace{    
 class JsonNode{
     using Node = std::unique_ptr<JsonNode>;
-    using List = std::unique_ptr<std::map<std::string,JsonNode>>;
-    using Map = std::unique_ptr<std::vector<int>>;
+    using Map = std::unique_ptr<std::map<std::string,JsonNode>>;
+    using List = std::unique_ptr<std::vector<int>>;
     using String = std::unique_ptr<std::string>;
     using Null = std::monostate;
     using SmallString = std::array<char, 8>;
@@ -18,12 +21,14 @@ class JsonNode{
     Storage storage;
     //int64_t i;
         public:
-    template<typename T, std::enable_if_t<std::is_convertible_v<T, Storage>, bool> = true>
-    JsonNode(T value):storage(value){}
-    // JsonNode(const JsonNode& arg){
-    //     // deep copy storage.
-    //     std::visit([&](auto&& arg){storage = arg;}, arg.storage);
 
+
+    template<typename T, std::enable_if_t<std::is_convertible_v<T, Storage>, bool> = true>
+    explicit JsonNode(const T value):storage(value){}
+    explicit JsonNode(const bool b):storage(b){}
+
+
+    // JsonNode(const JsonNode& arg){
     //     std::visit([this](auto&& arg){
     //         using T = std::decay_t<decltype(arg)>;
     //         if constexpr(std::is_same_v<T, std::monostate>){
@@ -77,12 +82,19 @@ void test_node_size(){
 }
 
 void test_json_types(){
-    JsonNode node(true);
+    JsonNode node1(true);
     JsonNode node2(false);
-    JsonNode node3(1);
-    JsonNode node4(1.0);
-    // JsonNode node5("hello");
-    // JsonNode node6(nullptr);
-    // JsonNode node7(std::vector<int>{1,2,3});
-}
-}
+    JsonNode node3(3);
+    JsonNode node4(150.3);
+    JsonNode node5("hello");
+    
+    // this one is non trivial
+    //auto myMap = std::map<std::string,JsonNode>{{"a",JsonNode(1)},{"b",JsonNode(2)}};
+    //JsonNode node6(myMap);
+    
+    //JsonNode node7(std::vector<int>{1,2,3});
+
+    //copy constructor
+    //JsonNode node8(node3);
+} 
+} // namespace
