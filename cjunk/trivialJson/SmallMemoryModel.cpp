@@ -24,10 +24,10 @@ class JsonNode{
     //int64_t i;
         public:
     template<typename T, std::enable_if_t<std::is_convertible_v<T, Storage>, bool> = true>
-    explicit JsonNode(const T value):storage(value){}
-    explicit JsonNode(const bool b):storage(b){}
+    constexpr explicit JsonNode(const T value):storage(value){}
+    constexpr explicit JsonNode(const bool b):storage(b){}
     // copy constructors could likily be shotened with some template magic.
-     JsonNode(const JsonNode& arg){
+    constexpr JsonNode(const JsonNode& arg){
         std::visit([&](const auto& arg){
             using T = std::decay_t<decltype(arg)>;
             if constexpr(std::is_same_v<T, JsonNode>)
@@ -52,11 +52,11 @@ class JsonNode{
     }
     // get the value of the node.
     template<typename T, std::enable_if_t<std::is_convertible_v<T, Storage>, bool> = true>
-    T get() const{
+    constexpr T get() const{
         return std::get<T>(storage);
     }
     // copy assignment
-    JsonNode& operator=(const JsonNode& arg){
+    constexpr JsonNode& operator=(const JsonNode& arg){
         if(this==&arg)
             return *this;
         std::visit([&](const auto& arg){
