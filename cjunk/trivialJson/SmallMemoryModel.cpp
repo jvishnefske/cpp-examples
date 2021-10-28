@@ -9,7 +9,9 @@
 #include <vector>
 #include <type_traits>
 
-namespace{    
+
+namespace{   
+    template<class> inline constexpr bool always_false_v = false; 
 class JsonNode{
     using Node = std::unique_ptr<JsonNode>;
     using Map = std::unique_ptr<std::map<std::string,JsonNode>>;
@@ -21,61 +23,60 @@ class JsonNode{
     Storage storage;
     //int64_t i;
         public:
-
-
     template<typename T, std::enable_if_t<std::is_convertible_v<T, Storage>, bool> = true>
     explicit JsonNode(const T value):storage(value){}
     explicit JsonNode(const bool b):storage(b){}
-
-
-    // JsonNode(const JsonNode& arg){
-    //     std::visit([this](auto&& arg){
-    //         using T = std::decay_t<decltype(arg)>;
-    //         if constexpr(std::is_same_v<T, std::monostate>){
-    //             // do nothing
-    //         }else if constexpr(std::is_same_v<T, bool>){
-    //             new (&storage) bool(arg);
-    //         }else if constexpr(std::is_same_v<T, long>){
-    //             new (&storage) long(arg);
-    //         }else if constexpr(std::is_same_v<T, double>){
-    //             new (&storage) double(arg);
-    //         }else if constexpr(std::is_same_v<T, String>){
-    //             new (&storage) String(new std::string(*arg));
-    //         }else if constexpr(std::is_same_v<T, Map>){
-    //             new (&storage) Map(new std::map<std::string,JsonNode>(*arg));
-    //         }else if constexpr(std::is_same_v<T, List>){
-    //             new (&storage) List(new std::list<JsonNode>(*arg));
-    //         }
-    //     }, arg.storage);
-    // }
-    //     // copy assignment
-    // JsonNode& operator=(const JsonNode& other){
-    //     if(this == &other){
-    //         return *this;
-    //     }
-    //     // deep copy storage.
-    //     std::visit([this](auto&& arg){
-    //         using T = std::decay_t<decltype(arg)>;
-    //         if constexpr(std::is_same_v<T, std::monostate>){
-    //             // do nothing
-    //         }else if constexpr(std::is_same_v<T, bool>){
-    //             new (&storage) bool(arg);
-    //         }else if constexpr(std::is_same_v<T, long>){
-    //             new (&storage) long(arg);
-    //         }else if constexpr(std::is_same_v<T, double>){
-    //             new (&storage) double(arg);
-    //         }else if constexpr(std::is_same_v<T, String>){
-    //             new (&storage) String(new std::string(*arg));
-    //         }else if constexpr(std::is_same_v<T, Map>){
-    //             new (&storage) Map(new std::map<int,int>(*arg));
-    //         }else if constexpr(std::is_same_v<T, List>){
-    //             new (&storage) List(new std::list<int>(*arg));
-    //         }
-    //     }, other.storage);
-    //     return *this;
-    // }
-
-
+    // copy constructors could likily be shotened with some template magic.
+     JsonNode(const JsonNode& arg){
+        std::visit([&](const auto& arg){
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr(std::is_same_v<T, JsonNode>)
+                storage = arg.storage;
+            else if constexpr(std::is_same_v<T, bool>)
+                storage = arg;
+            else if constexpr(std::is_same_v<T, long>)
+                storage = arg;
+            else if constexpr(std::is_same_v<T, double>)
+                storage = arg;
+            else if constexpr(std::is_same_v<T,std::unique_ptr<std::string>>)
+                storage = std::make_unique<std::string>(*arg);
+            else if constexpr(std::is_same_v<T,std::unique_ptr<std::map<std::string,JsonNode>>>)
+                storage = std::make_unique<std::map<std::string,JsonNode>>(*arg);
+            else if constexpr(std::is_same_v<T,std::unique_ptr<std::vector<int>>>)
+                storage = std::make_unique<std::vector<int>>(*arg);
+            else if constexpr(std::is_same_v<T,std::monostate>)
+                storage = arg;
+            else
+                static_assert(always_false_v<T>, "unsupported type");
+        }, arg.storage);
+    }
+    // copy assignment
+    JsonNode& operator=(const JsonNode& arg){
+        if(this==&arg)
+            return *this;
+        std::visit([&](const auto& arg){
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr(std::is_same_v<T, JsonNode>)
+                storage = arg.storage;
+            else if constexpr(std::is_same_v<T, bool>)
+                storage = arg;
+            else if constexpr(std::is_same_v<T, long>)
+                storage = arg;
+            else if constexpr(std::is_same_v<T, double>)
+                storage = arg;
+            else if constexpr(std::is_same_v<T,std::unique_ptr<std::string>>)
+                storage = std::make_unique<std::string>(*arg);
+            else if constexpr(std::is_same_v<T,std::unique_ptr<std::map<std::string,JsonNode>>>)
+                storage = std::make_unique<std::map<std::string,JsonNode>>(*arg);
+            else if constexpr(std::is_same_v<T,std::unique_ptr<std::vector<int>>>)
+                storage = std::make_unique<std::vector<int>>(*arg);
+            else if constexpr(std::is_same_v<T,std::monostate>)
+                storage = arg;
+            else
+                static_assert(always_false_v<T>, "unsupported type");
+        }, arg.storage);
+        return *this;
+    }
 };
 void test_node_size(){
     static_assert(sizeof(JsonNode)<=16);
@@ -87,7 +88,7 @@ void test_json_types(){
     JsonNode node3(3);
     JsonNode node4(150.3);
     JsonNode node5("hello");
-    
+    node4 = node5;
     // this one is non trivial
     //auto myMap = std::map<std::string,JsonNode>{{"a",JsonNode(1)},{"b",JsonNode(2)}};
     //JsonNode node6(myMap);
@@ -95,6 +96,6 @@ void test_json_types(){
     //JsonNode node7(std::vector<int>{1,2,3});
 
     //copy constructor
-    //JsonNode node8(node3);
+    JsonNode node8(node3);
 } 
 } // namespace
