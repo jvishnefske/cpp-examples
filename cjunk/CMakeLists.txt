@@ -1,3 +1,5 @@
 cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 project(cjunk)
 add_subdirectory(trivialJson)
+add_subdirectory(practice)
+add_subdirectory(swradio)
