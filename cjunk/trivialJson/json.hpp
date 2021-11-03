@@ -9,8 +9,8 @@
 struct Node{
     using Storage = std::variant<std::string, int64_t, double, std::vector<Node> >;
 
-    template<typename Integer, std::enable_if_t< std::is_integral_v<Integer>, bool> = true>
-    explicit Node(const Integer i): _storage{static_cast<int64_t>(i)} {}
+//    template<typename Integer, std::enable_if_t< std::is_integral_v<Integer>, bool> = true>
+//    explicit Node(const Integer i): _storage{static_cast<int64_t>(i)} {}
 
     template<typename T, std::enable_if_t< std::is_convertible_v<T, Storage>, bool> = true >
     explicit Node(const T obj): _storage(obj) {}
