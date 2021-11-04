@@ -19,14 +19,14 @@ target_link_libraries(jsonTests PRIVATE Catch2::Catch2WithMain trivialJson)
 #catch_discover_tests(jsonTests TEST_SPEC serialize_float)
 #ParseAndAddCatchTests(jsonTests)
 add_test(NAME jsonTests COMMAND $<TARGET_FILE:jsonTests>)
-if (ENABLE_BENCHMARK)
-
-    add_executable(jsonBenchmark tests/benchmark.cpp)
-    target_link_libraries(jsonBenchmark Catch2::Catch2WithMain rapidJson::rapidJson trivialJson)
-    # we should not need to do this due to the interface library
-    message("rapidjson location ${RAPIDJSON_INCLUDE}")
-    target_include_directories(jsonBenchmark PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/rapidjson/include)
-endif ()
+#if (ENABLE_BENCHMARK)
+#
+#    add_executable(jsonBenchmark tests/benchmark.cpp)
+#    target_link_libraries(jsonBenchmark Catch2::Catch2WithMain rapidJson::rapidJson trivialJson)
+#    # we should not need to do this due to the interface library
+#    message("rapidjson location ${RAPIDJSON_INCLUDE}")
+#    target_include_directories(jsonBenchmark PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/rapidjson/include)
+#endif ()
 
 target_compile_options(smallTrivialJson PRIVATE
     -Wall -Wextra -Wpedantic -Werror -Wno-error=unused-function

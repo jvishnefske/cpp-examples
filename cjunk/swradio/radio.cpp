@@ -2,15 +2,13 @@
 // here is the Radio class using RAII with std::array<4096> buffer instead of malloc
 #include <iostream>
 #include <cstring>
-
-
 #include <fcntl.h>
 #include <cerrno>
 #include <sys/ioctl.h>
 #include <linux/videodev2.h>
 #include <array>
 #include <libv4l2.h>
-
+#include <chrono>
 class Radio {
     private:
         int fd;
@@ -115,9 +113,7 @@ public:
 
 // main function
 int main(){
-    tictoc t;
-    (void) t;
-    // open /dev/swradio0
+        // open /dev/swradio0
     Radio radio("/dev/swradio0", 4096, 16);
 
     int count=0;

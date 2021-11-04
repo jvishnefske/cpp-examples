@@ -25,10 +25,8 @@ struct Node {
     using ListPtr = std::shared_ptr<List>;
     // reorder to put something sane for trivial construction.
     using Storage = std::variant<SmallString, int64_t, double, ListPtr>;
-
-    template<typename Integer, std::enable_if_t<std::is_integral_v<Integer>, bool> = true>
-    explicit Node(const Integer i): _storage{static_cast<int64_t>(i)} {}
-
+//    template<typename Integer, std::enable_if_t<std::is_integral_v<Integer>, bool> = true>
+//    explicit Node(const Integer i): _storage{static_cast<int64_t>(i)} {}
     template<typename T, std::enable_if_t<std::is_convertible_v<T, Storage>, bool> = true>
     explicit Node(const T obj): _storage(obj) {}
 
@@ -49,7 +47,7 @@ struct Node {
         _storage = std::make_shared<std::vector<Node> >(container);
     }
 
-    explicit Node() = default;
+    //explicit Node() = default;
 
     /**
      *
@@ -87,12 +85,12 @@ protected:
      * @param i
      * @return
      */
-    template<typename Integer, std::enable_if_t<std::is_integral<Integer>::value, bool> = true>
-    Node generator(Integer i) {
-        Node j;
-        j._storage = static_cast<int64_t>(i);
-        return j;
-    }
+//    template<typename Integer, std::enable_if_t<std::is_integral<Integer>::value, bool> = true>
+//    Node generator(Integer i) {
+//        Node j;
+//        j._storage = static_cast<int64_t>(i);
+//        return j;
+//    }
 
     template<typename T, std::enable_if_t<std::is_convertible<T, Node::Storage>::value, bool> = true>
     Node generator(T thingy) {
