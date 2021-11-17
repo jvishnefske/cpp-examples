@@ -11,7 +11,7 @@
 #include <iostream>
 namespace{
 class JsonNode{
-    template<class> static inline constexpr bool always_false_v = false;
+    //template<class> static inline constexpr bool always_false_v = false;
     //using Node = std::unique_ptr<JsonNode>;
 public:
     using Map = std::unique_ptr<std::map<std::string,JsonNode>>;
@@ -27,7 +27,7 @@ private:
     template<typename T, std::enable_if_t<std::is_convertible_v<T, Storage>, bool> = true>
     constexpr explicit JsonNode(const T value):storage(value){}
     constexpr explicit JsonNode(const bool b):storage(b){}
-    // copy constructors could likily be shotened with some template magic.
+    // copy constructors could likely be shortened with some template magic.
     constexpr JsonNode(const JsonNode& arg){
         std::visit([&](const auto& arg){
             using T = std::decay_t<decltype(arg)>;
@@ -50,7 +50,9 @@ private:
             else if constexpr(std::is_same_v<T,SmallString>)
                 storage = arg;
             else
-                static_assert(always_false_v<T>,"unhandled type");
+            {
+                //static_assert(always_false_v<T>,"unhandled type");
+            }
         }, arg.storage);
     }
     // get the value of the node.
@@ -83,7 +85,9 @@ private:
             else if constexpr(std::is_same_v<T,SmallString>)
                 storage = arg;
             else
-                static_assert(always_false_v<T>,"unhandled type");
+                {
+                    //static_assert(always_false_v<T>,"unhandled type");
+                }
         }, arg.storage);
         return *this;
     }
@@ -124,6 +128,7 @@ private:
 //        return result;
 //    }
 };
+static_assert(sizeof(JsonNode)<=16);
 #if 0
 JsonNode fromJsonString (const std::string input){
         JsonNode result;
@@ -199,22 +204,29 @@ JsonNode fromJsonString (const std::string input){
 #endif
         
 void test_node_size(){
-    static_assert(sizeof(JsonNode)<=16);
 }
 
+
+/**
+ * this type of thing could be used to store a json object, or
+ * schema at compile time.
+ * Array, and Object are limited to compile time constraints.
+ */
 class LiteralClass{
-    public:
-    LiteralClass(int a):a(a){}
-    JsonNode::Storage s;
-    int a;
+public:
+    constexpr LiteralClass(int a):a(a){}
+    // only include constexpr types
+    std::variant<std::monostate, int, double, bool> a;
 };
 void test_json_types(){
     constexpr std::variant<int,float> v1{1};
+    static_assert(v1.index() == 0, "int should be the first type");
     constexpr std::variant<JsonNode::Null, bool, long, double,JsonNode::SmallString > json_variant{};
-    constexpr std::unique_ptr<int> l{new int{1}};
+    static_assert(json_variant.index() == 0, "Null should be the first type");
     constexpr std::array<int,3> a{1,2,3};
-
+    static_assert(a.size() == 3, "array should have 3 elements");
     constexpr LiteralClass lc(1);
+    static_assert(lc.a.index() == 1, "int should be the second type");
     JsonNode node1(true);
     JsonNode node2(false);
     JsonNode node3(3);

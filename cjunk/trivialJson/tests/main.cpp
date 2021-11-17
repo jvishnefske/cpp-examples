@@ -34,11 +34,11 @@ TEST_CASE("serialize_int", "jsonTest"){
     CHECK("42" == j.serialize());
 }
 
-TEST_CASE("serialize_list", "jsonTest") {
-    JsonNode j(1, 2);
-    REQUIRE(j.serialize().length() > 0);
-    CHECK("[1,2]" == j.serialize());
-}
+//TEST_CASE("serialize_list", "jsonTest") {
+//    JsonNode j(1, 2);
+//    REQUIRE(j.serialize().length() > 0);
+//    CHECK("[1,2]" == j.serialize());
+//}
 
 // this tests tries to convert a sequence of floats to string, and back.
 // not a trivial task to get exact it turns out.
