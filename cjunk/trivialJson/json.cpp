@@ -56,7 +56,7 @@ struct JsonVisitor : Node {
     }
 };
 
-std::ostream& operator<<(std::ostream &os, Node object) {
+auto operator<<(std::ostream &os, Node object) -> std::ostream& {
     os << object.serialize();
     return os;
 }
