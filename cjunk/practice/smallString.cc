@@ -11,25 +11,27 @@
 
 struct SmallString{
     constexpr SmallString(std::string_view str=""){
+        // we depend on all null initializion to ensure proper termination where needed.
         characters = {};
-        for(auto i=0u; i<characters.size() && i<str.size();++i){
-            characters[i] = str[i];
-        }
+        auto n = std::min(str.size(), characters.size());
+        // requires c++20 for this to be constexpr
+        std::copy_n(std::begin(str), n,std::begin(characters));
     }
     constexpr size_t size() const{
-        size_t i;
-        for(i = 0; i<characters.size() && characters[i]!='\0'; ++i){
 
-        }
+        auto resultIt = std::find(std::begin(characters), std::end(characters), '\0');
+        size_t i = resultIt - std::begin(characters);
+
         return i;
     }
 
     constexpr std::string_view operator*() const{
         return std::string_view(characters.begin(), size());
     }
-    private:
+private:
     std::array<char, 8> characters;
 };
+
 
 struct value{
     using SmallString = std::array<char,8>;
@@ -46,7 +48,8 @@ int main(){
     constexpr SmallString a{"A"};
     static_assert(*a == "A", "simple string check");
     std::cout << *a << "size: "<< a.size() <<std::endl;
-    (void) s;
+    static_assert(sizeof(l) >0,"too small");
+    static_assert(sizeof(l)<=16, "too big");
     (void) l;
     return a.size();
 }
