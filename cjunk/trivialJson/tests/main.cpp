@@ -1,34 +1,48 @@
-//#define CATCH_CONFIG_MAIN
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/benchmark/catch_benchmark.hpp>
+#define CATCH_CONFIG_MAIN
+#define CATCH_CONFIG_ENABLE_BENCHMARKING
+
+#include <catch2/catch.hpp>
 #include "json.hpp"
 #include <random>
 #include <array>
 
 using namespace std::string_literals;
 using JsonNode = Node;
+//catch benchmark random number generator
+TEST_CASE("benchmark random number generator", "[benchmark]") {
+    std::mt19937 rng;
+    BENCHMARK("random number generator") {
+                                             (void) rng();
+                                         };
+//    BENCHMARK("JsonNode::parse")
+//                        -> RangeMultiplier(
+//    2)
+//    ->Range(1, 1 << 10)
+//            ->Unit(benchmark::kMillisecond);
+}
 
 TEST_CASE("serialize_float", "jsonTest") {
     JsonNode j(1.1);
-    CHECK(16 >= sizeof(JsonNode)); // we don't want this to increase.
+    // size is 16 on visual studio.
+    STATIC_REQUIRE(24 >= sizeof(JsonNode)); // we don't want this to increase.
     REQUIRE(j.serialize().length() > 0);
     CHECK("1.100000" == j.serialize());
 }
 
-TEST_CASE("serialize_empty", "jsonTest"){
+TEST_CASE("serialize_empty", "jsonTest") {
     JsonNode j;
     REQUIRE(j.serialize().length() > 0);
     CHECK("\"\"" == j.serialize());
 }
 
-TEST_CASE("serialize_string", "jsonTest"){
-    JsonNode j ("Cat");
+TEST_CASE("serialize_string", "jsonTest") {
+    JsonNode j("Cat");
     REQUIRE(j.serialize().length() > 0);
     CHECK("\"Cat\"" == j.serialize());
 }
 
-TEST_CASE("serialize_int", "jsonTest"){
-    JsonNode j ( 42 );
+TEST_CASE("serialize_int", "jsonTest") {
+    JsonNode j(42);
     REQUIRE(j.serialize().length() > 0);
     CHECK("42" == j.serialize());
 }

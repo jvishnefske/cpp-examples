@@ -10,36 +10,39 @@
 #include <iostream>
 #include <algorithm>
 
-namespace std {
-    //class vector;
-    //class string;
-    //template<typename t...>
-    //class map;
-}
 struct Node {
     using SmallString = std::array<char, 8>;
-//    using BigString = std::unique_ptr<std::string>;
-//    using Object = std::map<std::string, Node>;
-    //using ObjectPtr = std::unique_ptr<std::map<std::string, Node>>;
     using List = std::vector<Node>;
     using ListPtr = std::shared_ptr<List>;
     // reorder to put something sane for trivial construction.
     using Storage = std::variant<SmallString, int64_t, double, ListPtr>;
 
     template<typename Integer, std::enable_if_t<std::is_integral_v<Integer>, bool> = true>
-    explicit Node(const Integer i): _storage{static_cast<int64_t>(i)} {}
+    constexpr explicit Node(const Integer i): _storage{static_cast<int64_t>(i)} {}
 
     template<typename T, std::enable_if_t<std::is_convertible_v<T, Storage>, bool> = true>
-    explicit Node(const T obj): _storage(obj) {}
+    constexpr explicit Node(const T obj): _storage(obj) {}
 
     // only needed for small strings since char* is not convertable to SmallString
-    template<typename T, std::enable_if_t<std::is_convertible_v<T, std::string>, bool> = true>
-    explicit Node(T obj):_storage(generator(obj)._storage) {}
+//    template<typename T, std::enable_if_t<std::is_convertible_v<T, std::string>, bool> = true>
+//    explicit Node(T obj)
+//        //: _storage(generator(obj)._storage)
+//        {
+//            _storage.template emplace<std::array>({})
+//        }
 
-    template<typename ...Args
-            // check if each type is constructable
-            //,std::enable_if_t<(... && std::is_constructible_v<Node, Args>)> = true
-    >
+
+    constexpr size_t length(const char *s) {
+        return *s ? length(s + 1) + 1 : 1;
+    }
+
+    explicit Node(const char *s) {
+        SmallString d{};
+        std::copy_n(s, std::min(length(s), sizeof(SmallString)), d.data());
+        _storage = d;
+    }
+
+    template<typename ...Args>
     explicit Node(Args const &... args) {
         std::cout << "variadic template constructor" << std::endl;
         //auto generator = [](auto arg){return Node(arg);};

@@ -3,7 +3,7 @@
 #include <ostream>
 #include <sstream>
 #include <vector>
-#include <map>
+//#include <map>
 #include <string>
 
 
@@ -15,7 +15,7 @@
 // todo make constexpr operator""json
 // todo is it possble to use compile time schemas and create node.member which links to {"member": value}
 struct JsonVisitor : Node {
-    std::string operator()(const ListPtr o) {
+    std::string operator()(const ListPtr &o) {
         if (!o) {
             // for debugging
             return "nullptr!!!";
@@ -23,7 +23,7 @@ struct JsonVisitor : Node {
         std::ostringstream oss;
         oss << "[";
         bool first = true;
-        for (auto _o: *o) {
+        for (auto &_o: *o) {
             if (first) {
                 first = false;
             } else {
@@ -36,7 +36,7 @@ struct JsonVisitor : Node {
         return oss.str();
     }
 
-    std::string operator()(const std::string o) const {
+    std::string operator()(const std::string &o) const {
         return std::string("\"") + o + std::string("\"");
     }
 
