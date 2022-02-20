@@ -1,0 +1,127 @@
+# cmake helper functions for multiplatform library, and executable targets 
+# functions.cmake
+function(FindPackagesForProjects)
+    
+    # find all packages that provide a project
+    find_package(PkgConfig REQUIRED)
+    PKG_CHECK_MODULES(LIBRARY_PKGCONFIG_NAME REQUIRED
+        ${LIBRARY_PKGCONFIG_NAME}
+    )
+    find_package(Boost REQUIRED COMPONENTS system filesystem)
+    find_package(Boost REQUIRED COMPONENTS regex)
+    find_package(Boost REQUIRED COMPONENTS thread)
+    find_package(Boost REQUIRED COMPONENTS program_options)
+    find_package(Boost REQUIRED COMPONENTS serialization)
+    find_package(Boost REQUIRED COMPONENTS date_time)
+    find_package(Boost REQUIRED COMPONENTS test)
+    find_package(Boost REQUIRED COMPONENTS logging)
+    find_package(Boost REQUIRED COMPONENTS type_erasure)
+    find_package(Boost REQUIRED COMPONENTS iostreams)
+    find_package(Boost REQUIRED COMPONENTS filesystem)
+    find_package(Boost REQUIRED COMPONENTS system)
+    find_package(Boost REQUIRED COMPONENTS regex)
+    find_package(Boost REQUIRED COMPONENTS thread)
+    find_package(Boost REQUIRED COMPONENTS program
+endfunction()
+function(AddExecutable)
+    add_executable(${PROJECT_NAME} ${PROJECT_NAME}.cpp)
+    # cpack targets
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}
+        CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR}
+        CMAKE_INSTALL_BINDIR ${CMAKE_INSTALL_BINDIR}
+        CMAKE_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR}
+        CMAKE_INSTALL_DATAROOTDIR ${CMAKE_INSTALL_DATAROOTDIR}
+        CMAKE_INSTALL_DATADIR ${CMAKE_INSTALL_DATADIR}
+        CMAKE_INSTALL_DOCDIR ${CMAKE_INSTALL_DOCDIR}
+        CMAKE_INSTALL_LOCALEDIR ${CMAKE_INSTALL_LOCALEDIR}
+        CMAKE_INSTALL_MANDIR ${CMAKE_INSTALL_MANDIR}
+        CMAKE_INSTALL_MANDIR ${CMAKE_INSTALL_MANDIR}
+        CMAKE_INSTALL_MESSAGEDIR ${CMAKE_INSTALL_MESSAGEDIR}
+    )
+endfunction()
+function(AddLibrary)
+    add_library(${PROJECT_NAME} SHARED ${PROJECT_NAME}.cpp)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}
+        CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR}
+        CMAKE_INSTALL_BINDIR ${CMAKE_INSTALL_BINDIR}
+        CMAKE_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR}
+        CMAKE_INSTALL_DATAROOTDIR ${CMAKE_INSTALL_DATAROOTDIR}
+        CMAKE_INSTALL_DATADIR ${CMAKE_INSTALL_DATADIR}
+        CMAKE_INSTALL_DOCDIR ${CMAKE_INSTALL_DOCDIR}
+        CMAKE_INSTALL_LOCALEDIR ${CMAKE_INSTALL_LOCALEDIR}
+        CMAKE_INSTALL_MANDIR ${CMAKE_INSTALL_MANDIR}
+        )
+# set build directory prefix based on architecture
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(CMAKE_LIBRARY_ARCHITECTURE x64)
+else()
+    set(CMAKE_LIBRARY_ARCHITECTURE x86)
+endif()
+# dockerfile to build project
+dockerfile(
+    FROM ${DOCKER_IMAGE}
+    RUN mkdir /usr/local/include
+    RUN apt-get install -y cmake
+    RUN apt-get install -y libboost-all-dev
+    RUN apt-get install -y libsqlite3-dev
+    RUN apt-get install -y libsqlite3-dev
+    RUN apt-get install -y libssl-dev
+    RUN apt-get install -y libcurl4-openssl-dev
+    RUN apt-get install -y libcurl4-openssl-dev
+    CMD ["/bin/bash"]
+)
+# build.sh to build each architecture in a seperate cmake bin folder
+file(WRITE ${PROJECT_NAME}/build.sh "
+    #!/bin/bash
+    # build.sh
+    for arch in x86_64 armhf msp430; do 
+        # create cmake folder, generate, and build
+        mkdir -p ${arch}
+        cd ${arch}
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_ARCHITECTURE=${arch} ..
+        make
+        cd ..
+    done
+")
+# msp430 specific settings
+if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    set(CMAKE_TOOLCHAIN_FILE msp430-gcc.cmake)
+endif()
+# set project name
+set(PROJECT_NAME ${PROJECT_NAME})
+# set project version
+set(PROJECT_VERSION ${PROJECT_VERSION})
+
+#CMAKE_TOOLCHAIN_FILE msp430-gcc.cmake
+set(CXX_FLAGS "-std=c++11 -g -Wall -Werror -fpermissive -fno-common -fmessage-length=0 -fno-exceptions -ffunction-sections -fdata-sections -fno-rtti -fno-threadsafe-statics -fno-use-cxa-atexit -fno-use-cxa-get-exception-ptr -fno-nonansi-builtins -fno-builtin-printf -fno-builtin-fprintf -fno-builtin-vprintf -fno-builtin-vfprintf -fno-builtin-puts -fno-builtin-exit -fno-builtin-strncpy -fno-builtin-strncmp -fno-builtin-strncasecmp -fno-builtin-strcasecmp -fno-builtin-strnlen -fno-builtin-strlen -fno-builtin-memcpy -fno-builtin-memcmp -fno-builtin-memmove -fno-builtin-memset -fno-builtin-strcat -fno-builtin-strncat -fno-builtin-strcpy -fno-builtin-strncpy -fno-builtin-strcmp -fno-builtin-strncmp -fno-builtin-strstr -fno-builtin-strtok -fno-builtin-strpbrk -fno-builtin-strtol -fno-builtin-strtoul -fno-builtin-strtoll -fno-builtin-strtoull -fno-builtin-strtod" )
+set(CMAKE_CXX_FLAGS_RELEASE "-Os -DNDEBUG -DNDEBUG -fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-use-cxa-atexit -fno-use-cxa-get-exception-ptr -fno-nonansi-builtins -fno-builtin-printf -fno-builtin-fprintf")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Os -fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-use-cxa-atexit -fno-use-cxa-get-exception-ptr -fno-nonansi-builtins -fno-builtin-printf -fno-builtin-fprintf")
+set(CMAKE_CXX_FLAGS_MINSIZEREL "-Os -DNDEBUG -DNDEBUG -fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-use-cxa-atexit -fno-use-cxa-get-exception-ptr -fno-nonansi-builtins -fno-builtin-printf -fno-builtin-fprintf")
+set(CMAKE_CXX TIMESCALE_CXX)
+set(CMAKE_CXX_COMPILER TIMESCALE_CXX)
+set(CMAKE_CXX_FLAGS TIMESCALE_CXX_FLAGS)
+set(CMAKE_CXX_FLAGS_DEBUG TIMESCALE_CXX_FLAGS_DEBUG)
+
+set(CMAKE_C_COMPILER TIMESCALE_CC)
+set(CMAKE_C_FLAGS TIMESCALE_CC_FLAGS)
+set(CMAKE_C_FLAGS_DEBUG TIMESCALE_CC_FLAGS_DEBUG)
+set(CMAKE_C_FLAGS_MINSIZEREL TIMESCALE_CC_FLAGS)
+set(DEBUG_FLAGS "-g -Os -fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-use-cxa-atexit -fno-use-cxa-get-exception-ptr -fno-nonansi-builtins -fno-builtin-printf -fno-builtin-fprintf")
+set(CMAKE_C_FLAGS_RELEASE "-Os -DNDEBUG -DNDEBUG -fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-use-cxa-atexit -fno-use-cxa-get-exception-ptr -fno-nonansi-builtins -fno-builtin-printf -fno-builtin-fprintf")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "-Os -DN
+# add a cpack rpm systemd service file
+file(WRITE ${PROJECT_NAME}/systemd/system/${PROJECT_NAME}.service "
+    [Unit]
+    Description=${PROJECT_NAME}
+    After=network.target
+    [Service]
+    Type=simple
+    ExecStart=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/${PROJECT_NAME}
+    [Install]
+    WantedBy=multi-user.target
+")
+# add a cpack dpkg systemd service file
+file(GENERATE ${PROJECT_NAME}/systemd/system/${PROJECT_NAME}.service "
+    

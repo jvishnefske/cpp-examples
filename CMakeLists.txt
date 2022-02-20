@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.16)
 project(cpp_examples)
 # TODO: add to disable analysis
 option(STATIC_ANALYSIS OFF)
@@ -28,5 +28,3 @@ add_executable(raii raii.cc)
 target_link_libraries(raii PRIVATE Catch2::Catch2WithMain)
 add_test(NAME raii COMMAND $<TARGET_FILE:raii>)
 add_subdirectory(cjunk)
-add_subdirectory(external/Catch2)
-#find_package(Catch2 REQUIRED)
