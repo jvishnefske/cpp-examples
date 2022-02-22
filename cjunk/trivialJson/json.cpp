@@ -3,6 +3,7 @@
 #include <ostream>
 #include <sstream>
 #include <vector>
+#include <iostream>
 //#include <map>
 #include <string>
 
@@ -30,7 +31,8 @@ struct JsonVisitor : Node {
                 oss << ",";
             }
             //oss << "todo 1";//_o.visit(*this);
-            oss << std::visit(*this, _o._storage);
+            // use friend declaration to vist the private storage in Node::visit
+            oss << _o.visit(*this);
         }
         oss << "]";
         return oss.str();
