@@ -23,12 +23,11 @@ target_link_libraries(jsonTests PRIVATE ${libraries_to_link})
 #catch_discover_tests(jsonTests)
 add_test(NAME jsonTests COMMAND $<TARGET_FILE:jsonTests>)
 
-    add_executable(jsonBenchmark tests/benchmark.cpp)
-    target_link_libraries(jsonBenchmark PRIVATE Catch2::Catch2 ${libraries_to_link})
-    # we should not need to do this due to the interface library
-    message("rapidjson location ${RAPIDJSON_INCLUDE}")
-    target_include_directories(jsonBenchmark PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/rapidjson/include)
-endif ()
+add_executable(jsonBenchmark tests/benchmark.cpp)
+target_link_libraries(jsonBenchmark PRIVATE Catch2::Catch2 ${libraries_to_link})
+# we should not need to do this due to the interface library
+message("rapidjson location ${RAPIDJSON_INCLUDE}")
+target_include_directories(jsonBenchmark PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../thirdparty/rapidjson/include)
 
 
 add_executable(ctests ctests.cpp)
