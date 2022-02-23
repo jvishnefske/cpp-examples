@@ -9,8 +9,8 @@
 using namespace std::string_literals;
 using JsonNode = Node;
 //catch benchmark random number generator
-TEST_CASE("benchmark random number generator", "[benchmark]") {
-    std::mt19937 rng;
+TEST_CASE("benchmark random number generator", "[.]") {
+    std::mt19937 rng{std::random_device{}()};
     BENCHMARK("random number generator") {
                                              (void) rng();
                                          };
@@ -61,7 +61,7 @@ TEST_CASE("round_trip_conversion", "[!mayfail]") {
     std::random_device r;
     std::default_random_engine e1(r());
     std::exponential_distribution<double> rand_e(10.0);
-    for (int i = 0; i < 1000; i = i + 1) {
+    for (int i = 0; i < 1000; i++) {
         auto initial = rand_e(e1);
         std::array<char, 1000> buffer{};
         snprintf(buffer.data(), buffer.size(), "%20.20f", initial);

@@ -1,23 +1,30 @@
+#define CATCH_CONFIG_MAIN
+
 #include <memory>
 #include <vector>
 #include <iostream>
 #include <sstream> //stringstream
 #include <catch2/catch.hpp>
-class Elf{
+
+class Elf {
     int id;
     //Elf(Elf &other): id(other.id){
     //}
-    public:
-    explicit Elf(int _id):id(_id){
-        std::cout << "new elf    (" << id << ")." << " \taddr " << this <<std::endl;
+public:
+    explicit Elf(int _id) : id(_id) {
+        std::cout << "new elf    (" << id << ")." << " \taddr " << this << std::endl;
     }
-    Elf (Elf const& other):id(other.id){
-        std::cout << "copy of    (" << id << ") \taddr "<<this<<std::endl;}
-    ~Elf(){
-        std::cout << "killed elf (" << id << ")." << " \taddr " << 
-           this << std::endl ;
+
+    Elf(Elf const &other) : id(other.id) {
+        std::cout << "copy of    (" << id << ") \taddr " << this << std::endl;
     }
-    auto toString() -> std::string{
+
+    ~Elf() {
+        std::cout << "killed elf (" << id << ")." << " \taddr " <<
+                  this << std::endl;
+    }
+
+    const auto toString() -> std::string {
         std::stringstream ss;
         ss << id;
         return ss.str();
@@ -30,7 +37,7 @@ TEST_CASE("elvfObject", "raii")
     Elf *myelf = new Elf(400);
     plist.push_back(std::unique_ptr<Elf>(myelf));
     std::unique_ptr<Elf> fp(new Elf(55));
-     
+
     //consider using boost::shared_pointer, unique_ptr, or boost::ptr_vector,  
     // unclear on the differences between the first two though.
     std::vector<Elf> elfbox;
