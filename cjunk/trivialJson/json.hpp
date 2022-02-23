@@ -91,15 +91,15 @@ protected:
      * @param i
      * @return
      */
-//    template<typename Integer, std::enable_if_t< std::is_integral<Integer>::value, bool> = true>
-//    Node generator(Integer i){
-//        Node j;
-//        j._storage = static_cast<int64_t>(i);
-//        return j;
-//    }
+    template<typename Integer, std::enable_if_t<std::is_integral<Integer>::value, bool> = true>
+    Node generator(Integer i) {
+        Node j;
+        j._storage = static_cast<int64_t>(i);
+        return j;
+    }
 
-    template<typename T,std::enable_if_t< std::is_convertible<T, Node::Storage >::value, bool> = true >
-    Node generator(T thingy){
+    template<typename T, std::enable_if_t<std::is_convertible<T, Node::Storage>::value, bool> = true>
+    Node generator(T thingy) {
         Node j;
         j._storage = thingy;
         return j;
