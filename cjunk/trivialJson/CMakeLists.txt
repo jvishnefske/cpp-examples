@@ -14,8 +14,11 @@ add_library(trivialJson json.cpp)
 target_include_directories(trivialJson PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 set(libraries_to_link
         asio::asio
-        gRPC::gpr gRPC::upb gRPC::grpc gRPC::grpc++
-        nlohmann_json::nlohmann_json)
+#        gRPC::gpr gRPC::upb gRPC::grpc gRPC::grpc++
+        nlohmann_json::nlohmann_json
+        trivialJson
+        smallTrivialJson
+        )
 add_executable(jsonTests tests/main.cpp)
 target_link_libraries(jsonTests PRIVATE ${libraries_to_link} trivialJson)
 #if(MSVC and STATIC_ANALYSIS)
