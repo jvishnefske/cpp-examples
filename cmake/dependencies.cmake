@@ -18,7 +18,7 @@ macro(declare_dependencies)
             Poco
             URL https://github.com/pocoproject/poco/archive/refs/tags/poco-1.12.2-release.tar.gz
             URL_HASH SHA256=30442ccb097a0074133f699213a59d6f8c77db5b2c98a7c1ad9c5eeb3a2b06f3)
-    FethContent_Declare(
+    FetchContent_Declare(
             Boost
             GIT_REPOSITORY https://github.com/jvishnefske/boost-headers
             GIT_TAG origin/main
