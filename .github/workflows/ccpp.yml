@@ -4,9 +4,9 @@ on: [push]
 
 jobs: 
   build:
-    runs-on: ubuntu-latest
+    runs-on: ros
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: apt
       run: sudo apt-get -y install googletest cppcheck clang-tidy libboost-iostreams-dev libboost-filesystem-dev libboost-thread-dev
     - name: cmake
