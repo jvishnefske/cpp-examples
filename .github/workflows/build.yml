@@ -1,19 +1,25 @@
+---
 name: C/C++ CI
-on: 
+on:
   push:
   pull_request:
     types: [opened, synchronize, reopened]
-jobs: 
+jobs:
   name: Build and analyze
   build:
     runs-on: ubuntu-latest
     env:
-      BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory # Directory where build-wrapper output will be placed
+      BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory
     steps:
     - uses: actions/checkout@v3
     - uses: lukka/get-cmake@latest
     - name: cmake
       uses: lukka/run-cmake@v10
+  sonarcloud:
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
+    steps:
     - name: Install sonar-scanner and build-wrapper
       uses: SonarSource/sonarcloud-github-c-cpp@v1
     - name: Run build-wrapper
@@ -22,8 +28,5 @@ jobs:
         cmake -S . -B build
         build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build/ --config Release
     - name: Run sonar-scanner
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }} # Put the name of your token here
       run: |
         sonar-scanner --define sonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}"
