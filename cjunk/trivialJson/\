@@ -12,6 +12,7 @@
 namespace{
 class JsonNode{
     template<class> static inline constexpr bool always_false_v = false;
+    //using Node = std::unique_ptr<JsonNode>;
 public:
     using Map = std::unique_ptr<std::map<std::string,JsonNode>>;
     using List = std::unique_ptr<std::vector<JsonNode>>;
@@ -28,7 +29,7 @@ private:
     constexpr explicit JsonNode(const bool b):storage(b){}
     // copy constructors could likily be shotened with some template magic.
     constexpr JsonNode(const JsonNode& arg){
-        static_assert( !always_false_v<int>, "");
+        (void) always_false_v;
         std::visit([&](const auto& arg){
             using T = std::decay_t<decltype(arg)>;
             if constexpr(std::is_same_v<T, JsonNode>)
@@ -198,7 +199,7 @@ JsonNode fromJsonString (const std::string input){
     }
 #endif
         
-[[maybe_unused]] constexpr void test_node_size(){
+void test_node_size(){
     static_assert(sizeof(JsonNode)<=16);
 }
 
@@ -208,7 +209,7 @@ class LiteralClass{
     JsonNode::Storage s;
     int a;
 };
-[[maybe_unused]] void test_json_types(){
+void test_json_types(){
     //constexpr std::variant<int,float> v1{1};
     //constexpr std::variant<JsonNode::Null, bool, long, double,JsonNode::SmallString > json_variant{};
     std::unique_ptr<int> l{new int{1}};
