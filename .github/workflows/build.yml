@@ -15,7 +15,7 @@ jobs:
     - name: cmake
       run: cmake -B cmake-build -S . -GNinja && cmake --build cmake-build
     - name: install meson
-      run: python3 -m pip install meson && which meson
+      run: python3 -m pip install https://github.com/mesonbuild/meson/releases/download/1.0.0/meson-1.0.0.tar.gz && which meson
   sonarcloud:
     runs-on: ubuntu-latest
     env:
