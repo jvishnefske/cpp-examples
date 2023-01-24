@@ -30,7 +30,10 @@ jobs:
         which build-wrapper-linux-x86_64 || echo "failed while looking for wrapper command"
         which ninja || echo "ninja not found"
         build-wrapper-linux-x86-64 --out-dir cmake-build-sonar cmake --build build || echo "failed to run wrapper command"
+    - name: run tox
+      run: tox -e py
     - name: Run sonar-scanner
       run: |
         which sonar-scanner
         sonar-scanner --define sonar.cfamily.build-wrapper-output="cmake-build-sonar"
+

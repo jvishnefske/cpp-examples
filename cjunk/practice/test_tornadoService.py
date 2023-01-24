@@ -1,5 +1,4 @@
 import socket
-import future
 import sqlite3
 import http.server
 import json
@@ -11,6 +10,7 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
         self.send_header('Content-type', 'application/json')
         self.end_headers()
         self.wfile.write(json.dumps({"ip": socket.gethostbyname(socket.gethostname())}).encode())
+
 
 # database layer
 class Database:
@@ -148,8 +148,8 @@ class Client:
 
 
 # run
-if __name__ == "__main__":
-    database = Database("database.db")
+def instance(database_name="database.db"):
+    database = Database(database_name)
     business_logic = BusinessLogic(database)
     controller = Controller(business_logic)
     interface_layer = InterfaceLayer(controller)
@@ -181,4 +181,12 @@ if __name__ == "__main__":
 
     # run server
     httpd = http.server.HTTPServer(('', 8000), MyHandler)
-    httpd.serve_forever()
+    return httpd
+
+
+def test_server():
+    assert isinstance(instance(":memory:"), http.server.HTTPServer)
+
+
+if __name__ == "__main__":
+    instance().serve_forever()
