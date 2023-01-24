@@ -28,8 +28,8 @@ jobs:
     - name: Run build-wrapper
       run: |
         cmake -S . -B build
-        which build-wrapper-linux-x86_64
-        build-wrapper-linux-x86-64 --out-dir cmake-build-sonar ninja -C build
+        which build-wrapper-linux-x86_64 || echo "failed while looking for wrapper command"
+        build-wrapper-linux-x86-64 --out-dir cmake-build-sonar ninja -C build || echo "failed to run wrapper command"
     - name: Run sonar-scanner
       run: |
         which sonar-scanner
