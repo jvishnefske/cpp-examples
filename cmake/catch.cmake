@@ -7,7 +7,7 @@ set(CATCH_BUILD_TESTING OFF)
 FetchContent_Declare(
         catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG v3.0.0-preview3
+        GIT_TAG v3.2.1
 )
 # not FetchContent_MakeAvailable(Catch2)
 # fetch like this since the default method tries to hit the server even when local content is avaliable.
