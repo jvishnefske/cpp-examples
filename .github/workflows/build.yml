@@ -28,8 +28,9 @@ jobs:
     - name: Run build-wrapper
       run: |
         cmake -S . -B build
-        build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} ninja -C build
+        which build-wrapper-linux-x86_64
+        build-wrapper-linux-x86-64 --out-dir cmake-build-sonar ninja -C build
     - name: Run sonar-scanner
       run: |
         which sonar-scanner
-        sonar-scanner --define sonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}"
+        sonar-scanner --define sonar.cfamily.build-wrapper-output="cmake-build-sonar"
