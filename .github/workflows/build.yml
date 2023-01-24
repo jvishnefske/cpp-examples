@@ -7,8 +7,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory
     steps:
     - uses: actions/checkout@v3
     - uses: lukka/get-cmake@latest
@@ -19,6 +17,7 @@ jobs:
   sonarcloud:
     runs-on: ubuntu-20.04
     env:
+      BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
     steps:
@@ -30,7 +29,7 @@ jobs:
         cmake -S . -B build
         which build-wrapper-linux-x86_64 || echo "failed while looking for wrapper command"
         which ninja || echo "ninja not found"
-        build-wrapper-linux-x86-64 --out-dir cmake-build-sonar ninja -C build || echo "failed to run wrapper command"
+        build-wrapper-linux-x86-64 --out-dir cmake-build-sonar cmake --build build || echo "failed to run wrapper command"
     - name: Run sonar-scanner
       run: |
         which sonar-scanner
