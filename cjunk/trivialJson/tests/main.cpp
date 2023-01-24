@@ -47,7 +47,7 @@ TEST_CASE("serialize_list", "jsonTest") {
 TEST_CASE("round_trip_conversion", "[!mayfail]") {
 
     std::random_device r;
-    std::default_random_engine e1(r());
+    std::mt19937_64 e1(r());
     std::exponential_distribution<double> rand_e(10.0);
     for (int i = 0; i < 1000; i = i + 1) {
         auto initial = rand_e(e1);
