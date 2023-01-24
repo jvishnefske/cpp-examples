@@ -17,8 +17,7 @@ jobs:
     - name: meson inspection
       run: which meson
     - name: install meson
-      run: python3 -m pip install meson
-      run: which meson
+      run: python3 -m pip install meson && which meson
   sonarcloud:
     runs-on: ubuntu-latest
     env:
