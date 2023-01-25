@@ -3,6 +3,7 @@ Include(FetchContent)
 set(CATCH_INSTALL_DOC OFF)
 set(CATCH_INSTALL_EXTRAS OFF)
 set(CATCH_BUILD_TESTING OFF)
+set(FETCHCONTENT_QUIET OFF)
 
 FetchContent_Declare(
         catch2
@@ -19,7 +20,7 @@ else ()
     message("populated catch dirs ${catch2_SOURCE_DIR}, ${catch2_BINARY_DIR}, pop: ${catch2_POPULATED}")
 endif ()
 add_subdirectory(${catch2_SOURCE_DIR} ${catch2_BINARY_DIR})
-include (${catch2_SOURCE_DIR}/extras/ParseAndAddCatchTests.cmake)
+
 
 include(CTest)
 #include(${catch2_BINARY_DIR}/Catch2)

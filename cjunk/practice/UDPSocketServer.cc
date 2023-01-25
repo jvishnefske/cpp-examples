@@ -20,9 +20,20 @@
 #include <signal.h>
 // open a udp socket, and parse quic dataframes
 class Socket;
+enum DataType {
+  kDataType_Padding = 0,
+  kDataType_PING = 1,
+  kDataType_ACK = 2,
+  kDataType_ResetStream = 3,
+  kDataType_StopSending = 4,
+  kDataType_Crypto = 6,
+  kDataType_NewToken = 7,
+  kDataType_Stream = 8,
+  kDataType_Max = 0x7fffffff,
+};
 class response{
     uint16_t timestamp;
-    std::array<char,4> channelName
+    std::array<char,4> channelName;
     enum DataType type;
 };
 
@@ -51,8 +62,10 @@ Socket::Socket(const std::string_view port)
     // bind the socket to the port
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
+    addr.sin_addr = htonl(INADDR_ANY);
     addr.sin_port = htons(std::stoi(port));
-    addr.sin_addr.s_addr = INADDR_ANY;
+//    addr.sin_port = htons(std::stoi(port));
+//    addr.sin_addr.s_addr = INADDR_ANY;
     if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0)
     {
         std::cerr << "bind() failed" << std::endl;

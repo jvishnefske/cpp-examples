@@ -1,12 +1,25 @@
 #include <cmath>
 #include <future>
+#include <vector>
+#include <random>
+#include <iostream>
+#include <random>
+#include <vector>
+#include <chrono>
+#include <thread>
+#include <future>
+#include <algorithm>
+#include <iterator>
+#include <numeric>
+#include <functional>
+
 template<typename Model>
 class AntColonyOptimization {
 public:
     AntColonyOptimization(Model& model, int ants, int iterations, double alpha, double beta, double rho, double q0)
         : model(model), ants(ants), iterations(iterations), alpha(alpha), beta(beta), rho(rho), q0(q0) {}
     void run() {
-        std::vector<std::future<std::vector<double>>> futures;
+        std::vector<std::future<std::vector<double> > > futures;
         for (int i = 0; i < ants; ++i) {
             futures.push_back(std::async(std::launch::async, &AntColonyOptimization::ant, this));
         }
@@ -78,17 +91,8 @@ private:
     }
 };
 
-# The following code runs the ACO algorithm on the TSP problem.
-#include <iostream>
-#include <random>
-#include <vector>
-#include <chrono>
-#include <thread>
-#include <future>
-#include <algorithm>
-#include <iterator>
-#include <numeric>
-#include <functional>
+//The following code runs the ACO algorithm on the TSP problem.
+
 void test_aco(int ants, int iterations, double alpha, double beta, double rho, double q0) {
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -117,7 +121,7 @@ void test_aco(int ants, int iterations, double alpha, double beta, double rho, d
     std::copy(aco.get_path().begin(), aco.get_path().end(), std::ostream_iterator<int>(std::cout, " "));
     std::cout << std::endl;
 }
-int main(){
+int test_aco2(){
     test_aco(10, 100, 1.0, 10.0, 0.5, 0.5);
     test_aco(10, 100, 1.0, 10.0, 0.5, 0.0);
     test_aco(10, 100, 1.0, 10.0, 0.0, 0.5);
