@@ -28,7 +28,6 @@ private:
     constexpr explicit JsonNode(const bool b):storage(b){}
     // copy constructors could likely be shortened with some template magic.
     constexpr JsonNode(const JsonNode& arg){
-        static_assert( !always_false_v<int>, "");
         std::visit([&](const auto& arg){
             using T = std::decay_t<decltype(arg)>;
             if constexpr(std::is_same_v<T, JsonNode>)
@@ -219,7 +218,7 @@ public:
     // only include constexpr types
     std::variant<std::monostate, int, double, bool> a;
 };
-void test_json_types(){
+[[maybe_unused]] void test_json_types(){
     constexpr std::variant<int,float> v1{1};
     static_assert(v1.index() == 0, "int should be the first type");
     constexpr std::variant<JsonNode::Null, bool, long, double,JsonNode::SmallString > json_variant{};

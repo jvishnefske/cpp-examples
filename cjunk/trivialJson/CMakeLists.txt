@@ -12,15 +12,9 @@ list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 add_library(smallTrivialJson SmallMemoryModel.cpp)
 add_library(trivialJson json.cpp)
 target_include_directories(trivialJson PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-set(libraries_to_link
-        asio::asio
-#        gRPC::gpr gRPC::upb gRPC::grpc gRPC::grpc++
-        nlohmann_json::nlohmann_json
-        trivialJson
-        smallTrivialJson
-        )
+
 add_executable(jsonTests tests/main.cpp)
-target_link_libraries(jsonTests PRIVATE ${libraries_to_link} trivialJson)
+target_link_libraries(jsonTests PRIVATE ${libraries_to_link} Catch2WithMain trivialJson)
 #if(MSVC and STATIC_ANALYSIS)
 #target_compile_options(jsonTests PRIVATE /fsanitize=address)
 #endif()
@@ -38,4 +32,4 @@ endif ()
 
 add_executable(ctests ctests.cpp)
 #target_link_libraries(ctests Catch2::Catch2)
-target_link_libraries(ctests PRIVATE ${libraries_to_link})
+target_link_libraries(ctests PRIVATE Catch2WithMain)
