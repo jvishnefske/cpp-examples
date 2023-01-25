@@ -15,7 +15,7 @@ jobs:
     - name: install meson
       run: python3 -m pip install https://github.com/mesonbuild/meson/releases/download/1.0.0/meson-1.0.0.tar.gz && which meson
   sonarcloud:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

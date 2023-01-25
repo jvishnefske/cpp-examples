@@ -1,5 +1,12 @@
+.coverage
+.tox
+.scannerwork
+Testing
 #vim
 *.swp
+
+#reports 
+coverage.xml
 
 # Prerequisites
 *.d
