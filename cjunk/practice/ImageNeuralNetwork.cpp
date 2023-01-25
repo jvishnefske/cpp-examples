@@ -34,29 +34,6 @@ public:
     cv::Mat image;
 };
 // class to store the data
-class Data {
-public:
-    Data(const std::string& filename) {
-        std::ifstream file(filename);
-        if (!file.is_open()) {
-            std::cerr << "Error: cannot open file " << filename << std::endl;
-            exit(1);
-        }
-        std::string line;
-        while (std::getline(file, line)) {
-            std::stringstream ss(line);
-            std::string label;
-            ss >> label;
-            labels.push_back(std::stoi(label));
-            std::string filename;
-            ss >> filename;
-            images.push_back(Image(filename));
-        }
-    }
-    std::vector<int> labels;
-    std::vector<Image> images;
-};
-// class to store the data
 class DataSet {
 public:
     DataSet(const std::string& filename) {
