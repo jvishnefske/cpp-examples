@@ -57,7 +57,7 @@ endif()
 # find_package(gRPC)
 # Note: 6 target(s) were omitted.
 #target_link_libraries(main PRIVATE gRPC::gpr gRPC::upb gRPC::grpc gRPC::grpc++)
-find_package(nlohmann_json CONFIG REQUIRED)
+#find_package(nlohmann_json CONFIG REQUIRED)
 
 set(RAPIDJSON_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/rapidjson/include/")
 if (ENABLE_BENCHMARK)
