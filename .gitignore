@@ -1,7 +1,8 @@
+.idea/
 .coverage
-.tox
+.tox/
 .scannerwork
-Testing
+Testing/
 #vim
 *.swp
 
