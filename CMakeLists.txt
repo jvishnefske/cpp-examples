@@ -27,6 +27,7 @@ declare_dependencies()
 FetchContent_MakeAvailable(Boost Catch2)
 enable_testing()
 #include(cmake/pmm.cmake)
+
 # consider grpc, but it takes a long time to compile which slows down ci.
 # set( CMAKE_OSX_ARCHITECTURES arm64)
 # if arm osx

@@ -1,3 +1,4 @@
+option(ENABLE_BENCHMARK "compile benchmark application" ON)
 project(trivialJson)
 #option(ENABLE_BENCHMARK "compile benchmark application" OFF)
 
@@ -13,6 +14,13 @@ add_library(smallTrivialJson SmallMemoryModel.cpp)
 add_library(trivialJson json.cpp)
 target_include_directories(trivialJson PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
+set(libraries_to_link
+        asio::asio
+#        gRPC::gpr gRPC::upb gRPC::grpc gRPC::grpc++
+        nlohmann_json::nlohmann_json
+        trivialJson
+        smallTrivialJson
+        )
 add_executable(jsonTests tests/main.cpp)
 target_link_libraries(jsonTests PRIVATE ${libraries_to_link} Catch2WithMain trivialJson)
 #if(MSVC and STATIC_ANALYSIS)
@@ -21,6 +29,7 @@ target_link_libraries(jsonTests PRIVATE ${libraries_to_link} Catch2WithMain triv
 #catch_discover_tests(jsonTests TEST_SPEC serialize_float)
 #ParseAndAddCatchTests(jsonTests)
 add_test(NAME jsonTests COMMAND $<TARGET_FILE:jsonTests>)
+
 set(ENABLE_BENCHMARK OFF)
 if (ENABLE_BENCHMARK)
      add_executable(jsonBenchmark tests/benchmark.cpp)
