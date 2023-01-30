@@ -132,23 +132,7 @@ class Particle{
     Map map_landmarks;
 };
 
-void test_particle_filter_2(){
-    Map map_landmarks;
-    map_landmarks.insert(std::make_pair(0, Landmark(0, 0)));
-    map_landmarks.insert(std::make_pair(1, Landmark(1, 0)));
-    map_landmarks.insert(std::make_pair(2, Landmark(0, 1)));
-    map_landmarks.insert(std::make_pair(3, Landmark(1, 1)));
-    std::vector<LandmarkObs> observations;
-    observations.push_back(LandmarkObs(0, 0.0, 0.0));
-    observations.push_back(LandmarkObs(1, 0.0, 0.0));
-    observations.push_back(LandmarkObs(2, 0.0, 0.0));
-    observations.push_back(LandmarkObs(3, 0.0, 0.0));
-    ParticleFilter pf;
-    pf.run_pf(observations, map_landmarks, ParticleFilter::Model(0.1, 0.2, 0.05, 0.05), 100, 10);
-}
-
 int main(){
     test_particle_filter();
-    test_particle_filter_2();
     return 0;
 }

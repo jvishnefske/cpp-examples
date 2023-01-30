@@ -3,11 +3,11 @@
 #include <condition_variable>
 #include <thread>
 #include <future>
-#include <functional>
+#include <thread>
 #include <iostream>
 #include <atomic>
 #include <queue>
-#include <asio.hpp>
+#include <boost/asio.hpp>
 
 class StandardInput
 {

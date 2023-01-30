@@ -1,4 +1,4 @@
-body_template="""
+body_template = """
 <!html>
 <html>
 <head>
@@ -32,7 +32,7 @@ body_template="""
 description="""
 
 # the footer
-footer="""
+footer = """
 <p>
 <a href="http://www.cdc.gov/">CDC</a>
 <a href="http://www.hhs.gov/">HHS</a>
@@ -49,7 +49,7 @@ footer="""
 """
 
 # the menu
-menu="""
+menu = """
 <nav class="navbar navbar-default">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
@@ -105,7 +105,7 @@ d            <li><a href="#">One more separated link</a></li>
 """
 
 # the header
-header="""
+header = """
 <div class="jumbotron">
   <div class="container">
     <h1>%(title)s</h1>
@@ -115,7 +115,7 @@ header="""
 """
 
 # the footer
-footer="""
+footer = """
 <footer class="footer">
   <div class="container">
     <p class="text-muted">%(footer)s</p>
@@ -124,7 +124,7 @@ footer="""
 """
 
 # the body
-body="""
+body = """
 <div class="container">
   <div class="row">
     <div class="col-md-12">
@@ -136,7 +136,7 @@ body="""
 """
 
 # the form
-form="""
+form = """
 <div class="container">
   <div class="row">
     <div class="col-md-12">
@@ -174,7 +174,7 @@ form="""
 """
 
 # the table
-table="""
+table = """
 <div class="container">
   <div class="row">
     <div class="col-md-12">
@@ -214,47 +214,63 @@ table="""
 """
 import flask
 from flask import Flask, render_template
+from flask_wtf.csrf import CSRFProtect
+
 
 app = Flask(__name__)
+csrf = CSRFProtect(app)
 
-@app.route('/')
+
+@app.route("/")
 def index():
     "render and return body_template"
-    return render_template('index.jinja',
-                           title='Home',
-                           description='This is the home page',
-                           footer=footer,
-                           body=body,
-                           menu=menu)
+    return render_template(
+        "index.jinja",
+        title="Home",
+        description="This is the home page",
+        footer=footer,
+        body=body,
+        menu=menu,
+    )
 
-@app.route('/about')
+
+@app.route("/about")
 def about():
     "render and return body_template"
-    return render_template('index.jinja',
-                           title='About',
-                           description='This is the about page',
-                           footer=footer,
-                           body=body,
-                           menu=menu)
+    return render_template(
+        "index.jinja",
+        title="About",
+        description="This is the about page",
+        footer=footer,
+        body=body,
+        menu=menu,
+    )
 
-@app.route('/contact')
+
+@app.route("/contact")
 def contact():
     "render and return body_template"
-    return render_template('body_template',
-                           title='Contact',
-                           description='This is the contact page',
-                           footer=footer,
-                           body=body,
-                           menu=menu)
+    return render_template(
+        "body_template",
+        title="Contact",
+        description="This is the contact page",
+        footer=footer,
+        body=body,
+        menu=menu,
+    )
 
-@app.route('/newuser')
+
+@app.route("/newuser")
 def newuser():
     "render and return form"
-    return render_template('form_template',
-                           title='New User',
-                           description='This is the new user page',
-                           footer=footer,
-                           form=form)
+    return render_template(
+        "form_template",
+        title="New User",
+        description="This is the new user page",
+        footer=footer,
+        form=form,
+    )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app.run(debug=True)

@@ -1,15 +1,16 @@
 // import opencv
-#include <opencv2/opencv.hpp>
+//#include <opencv2/opencv.hpp>
 
 #include <iostream>
 #include <string>
 #include <vector>
+#if 0
 // include ffmpeg network stream reader
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
 #include <libswscale/swscale.h>
 #include <libavutil/imgutils.h>
-
+#endif
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
@@ -24,18 +25,39 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/read.hpp>
-class NetworkVideoStreamObservable{
-    NetworkVideoStreamObservable(std::string url)
-            : url_(url)
-            , io_service_()
+class NetworkStreamBase{
+    static constexpr int kMaxBuffer=1024;
+    protected:
+    NetworkStreamBase():
+            io_service_()
             , socket_(io_service_)
-            , read_buffer_(boost::asio::buffer(buffer_))
-            , write_buffer_(boost::asio::buffer(buffer_))
+            , read_buffer_(kMaxBuffer)
+            , write_buffer_(kMaxBuffer)
             , is_running_(false)
             , is_reading_(false)
             , is_writing_(false)
             , is_connected_(false)
             , is_disconnected_(false)
+    {}
+    boost::asio::io_service io_service_;
+    boost::asio::ip::tcp::socket socket_;
+    boost::asio::streambuf read_buffer_;
+    boost::asio::streambuf write_buffer_;
+    bool is_running_;
+    bool is_reading_;
+    bool is_writing_;
+    bool is_connected_;
+    bool is_disconnected_;
+    std::thread read_thread_;
+    std::thread write_thread_;
+    public:
+    void stop(){
+        is_running_ = false;
+    }
+};
+class NetworkVideoStreamObservable: public NetworkStreamBase{
+    NetworkVideoStreamObservable(std::string url)
+            : url_(url)
     {
         boost::system::error_code ec;
         boost::asio::ip::tcp::resolver resolver(io_service_);
@@ -55,8 +77,8 @@ class NetworkVideoStreamObservable{
         is_running_ = true;
         is_reading_ = true;
         is_writing_ = true;
-        read_thread_ = boost::thread(boost::bind(&NetworkVideoStreamObservable::read_loop, this));
-        write_thread_ = boost::thread(boost::bind(&NetworkVideoStreamObservable::write_loop, this));
+        read_thread_ = std::thread([this](){read_loop();});
+        write_thread_ = std::thread([this](){write_loop();});
     }
     ~NetworkVideoStreamObservable() {
         is_running_ = false;
@@ -97,18 +119,21 @@ class NetworkVideoStreamObservable{
     }
     void write(const char* data, int size) {
         if (is_connected_) {
-            write_buffer_.consume(write_buffer_.size());
-            write_buffer_.put(boost::asio::buffer(data, size));
+            std::string tmp(data,size);
+            std::ostream os(&write_buffer_);
+            os << tmp;
         }
     }
     void write(const std::string& data) {
         if (is_connected_) {
-            write_buffer_.consume(write_buffer_.size());
-            write_buffer_.put(boost::asio::buffer(data));
+            std::ostream os(&write_buffer_);
+            os << data;
         }
     }
+    private:
+    std::string url_;
 };
-
+#if USE_X264
 // x264 frame decoder
 class X264FrameDecoder {
     X264FrameDecoder()
@@ -276,21 +301,14 @@ void test_x264_frame_decoder() {
     }
 }
 
+#endif // USE_X264
 // ffmpeg network stream reader
 
 // ffmpeg network stream reader
-class FFmpegNetworkStreamReader {
+class FFmpegNetworkStreamReader: public NetworkStreamBase {
+    public:
     FFmpegNetworkStreamReader(std::string url)
             : url_(url)
-            , io_service_()
-            , socket_(io_service_)
-            , read_buffer_(boost::asio::buffer(buffer_))
-            , write_buffer_(boost::asio::buffer(buffer_))
-            , is_running_(false)
-            , is_reading_(false)
-            , is_writing_(false)
-            , is_connected_(false)
-            , is_disconnected_(false)
     {
         boost::system::error_code ec;
         boost::asio::ip::tcp::resolver resolver(io_service_);
@@ -329,7 +347,6 @@ class FFmpegNetworkStreamReader {
         read_thread_.join();
         write_thread_.join();
     }
-
     void read_loop() {
         while (is_running_) {
             if (!is_connected_) {
@@ -340,6 +357,8 @@ class FFmpegNetworkStreamReader {
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 continue;
             }
+#if 0
+            // todo fix buffer type conversion.
             boost::system::error_code ec;
             size_t bytes_read = socket_.read_some(read_buffer_, ec);
             if (ec) {
@@ -357,6 +376,7 @@ class FFmpegNetworkStreamReader {
             if (bytes_read > 0) {
                 std::cout << "Read " << bytes_read << " bytes" << std::endl;
             }
+#endif
         }
     }
 
@@ -370,6 +390,8 @@ class FFmpegNetworkStreamReader {
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 continue;
             }
+#if 0
+            // todo fix buffer type conversion.
             boost::system::error_code ec;
             size_t bytes_written = socket_.write_some(write_buffer_, ec);
             if (ec) {
@@ -387,37 +409,18 @@ class FFmpegNetworkStreamReader {
             if (bytes_written > 0) {
                 std::cout << "Write " << bytes_written << " bytes" << std::endl;
             }
+#endif
         }
     }
-
+private:
     std::string url_;
-    boost::asio::io_service io_service_;
-    boost::asio::ip::tcp::socket socket_;
-    boost::asio::streambuf read_buffer_;
-    boost::asio::streambuf write_buffer_;
-    bool is_running_;
-    bool is_reading_;
-    bool is_writing_;
-    bool is_connected_;
-    bool is_disconnected_;
-    std::thread read_thread_;
-    std::thread write_thread_;
-    char buffer_[1024];
 };
 
 // ffmpeg network stream writer
-class FFmpegNetworkStreamWriter {
+class FFmpegNetworkStreamWriter :public NetworkStreamBase{
+    public:
     FFmpegNetworkStreamWriter(std::string url)
             : url_(url)
-            , io_service_()
-            , socket_(io_service_)
-            , read_buffer_(boost::asio::buffer(buffer_))
-            , write_buffer_(boost::asio::buffer(buffer_))
-            , is_running_(false)
-            , is_reading_(false)
-            , is_writing_(false)
-            , is_connected_(false)
-            , is_disconnected_(false)
     {
         boost::system::error_code ec;
         boost::asio::ip::tcp::resolver resolver(io_service_);
@@ -440,100 +443,21 @@ class FFmpegNetworkStreamWriter {
             socket_.close();
         }
     }
-
     void start() {
+#if 0 // write thread currently unimplemented, may not be needed for design.
         is_running_ = true;
         is_reading_ = true;
         is_writing_ = true;
-        read_thread_ = std::thread(&FFmpegNetworkStreamWriter::read_loop, this);
-        write_thread_ = std::thread(&FFmpegNetworkStreamWriter::write_loop, this);
+        read_thread_ = std::thread([this](){read_loop();});
+        write_thread_ = std::thread([this](){write_loop();});
+#endif
     }
-
-    void stop() {
-        is_running_ = false;
-        is_reading_ = false;
-        is_writing_ = false;
-        read_thread_.join();
-        write_thread_.join();
-    }
-
-    void read_loop() {
-        while (is_running_) {
-            if (!is_connected_) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                continue;
-            }
-            if (!is_reading_) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                continue;
-            }
-            boost::system::error_code ec;
-            size_t bytes_read = socket_.read_some(read_buffer_, ec);
-            if (ec) {
-                std::cout << "Error: " << ec.message() << std::endl;
-                is_connected_ = false;
-                is_disconnected_ = true;
-                break;
-            }
-            if (bytes_read == 0) {
-                std::cout << "Error: read 0 bytes" << std::endl;
-                is_connected_ = false;
-                is_disconnected_ = true;
-                break;
-            }
-            if (bytes_read > 0) {
-                std::cout << "Read " << bytes_read << " bytes" << std::endl;
-            }
-        }
-    }
-
-    void write_loop() {
-        while (is_running_) {
-            if (!is_connected_) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                continue;
-            }
-            if (!is_writing_) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                continue;
-            }
-            boost::system::error_code ec;
-            size_t bytes_written = socket_.write_some(write_buffer_, ec);
-            if (ec) {
-                std::cout << "Error: " << ec.message() << std::endl;
-                is_connected_ = false;
-                is_disconnected_ = true;
-                break;
-            }
-            if (bytes_written == 0) {
-                std::cout << "Error: write 0 bytes" << std::endl;
-                is_connected_ = false;
-                is_disconnected_ = true;
-                break;
-            }
-            if (bytes_written > 0) {
-                std::cout << "Write " << bytes_written << " bytes" << std::endl;
-            }
-        }
-    }
-
+    private:
     std::string url_;
-    boost::asio::io_service io_service_;
-    boost::asio::ip::tcp::socket socket_;
-    boost::asio::streambuf read_buffer_;
-    boost::asio::streambuf write_buffer_;
-    bool is_running_;
-    bool is_reading_;
-    bool is_writing_;
-    bool is_connected_;
-    bool is_disconnected_;
-    std::thread read_thread_;
-    std::thread write_thread_;
-    char buffer_[1024];
 };
-
-// ffmpeg network stream
+    // ffmpeg network stream
 class FFmpegNetworkStream {
+    public:
     FFmpegNetworkStream(std::string url)
             : url_(url)
             , reader_(url)
@@ -547,7 +471,7 @@ class FFmpegNetworkStream {
         reader_.stop();
         writer_.stop();
     }
-
+    private:
     std::string url_;
     FFmpegNetworkStreamReader reader_;
     FFmpegNetworkStreamWriter writer_;
@@ -556,7 +480,7 @@ void test_ffmpeg_network_stream() {
     FFmpegNetworkStream stream("http://127.0.0.1:8080/live.flv");
 }
 
-int main(int argc, char *argv[]) {
+int main() {
     test_ffmpeg_network_stream();
     return 0;
 }

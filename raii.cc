@@ -4,7 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <sstream> //stringstream
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 class Elf {
     int id;
@@ -24,7 +24,7 @@ public:
                   this << std::endl;
     }
 
-    const auto toString() -> std::string {
+    auto toString() -> std::string {
         std::stringstream ss;
         ss << id;
         return ss.str();
