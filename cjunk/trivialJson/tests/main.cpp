@@ -9,6 +9,7 @@
 using namespace std::string_literals;
 using JsonNode = Node;
 //catch benchmark random number generator
+
 TEST_CASE("benchmark random number generator", "[.]") {
     std::mt19937 rng{std::random_device{}()};
     BENCHMARK("random number generator") {
@@ -23,6 +24,7 @@ TEST_CASE("benchmark random number generator", "[.]") {
 
 TEST_CASE("serialize_float", "jsonTest") {
     JsonNode j(1.1);
+
     CHECK(16 >= sizeof(JsonNode)); // we don't want this to increase.
     REQUIRE(j.serialize().length() > 0);
     CHECK("1.100000" == j.serialize());

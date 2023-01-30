@@ -1,5 +1,4 @@
 #pragma once
-
 #include <variant>
 #include <iosfwd>
 #include <string>
@@ -61,10 +60,9 @@ struct Node {
     template<typename ...Args>
     explicit Node(Args const &... args){
         //auto generator = [](auto arg){return Node(arg);};
-        std::vector<Node> container{generator(args) ...};
-        // (  container.push_back(args)  ... );
-        // todo: is there an unnecessary copy here??
-        _storage = std::make_shared<std::vector<Node> >(container);
+        std::vector<Node> container{ generator(args) ...  };
+        //(  container.push_back(args)  ... );
+        _storage = container;
     }
 
     Node() = default;
@@ -91,6 +89,7 @@ protected:
      * @param i
      * @return
      */
+
     template<typename Integer, std::enable_if_t<std::is_integral<Integer>::value, bool> = true>
     Node generator(Integer i) {
         Node j;

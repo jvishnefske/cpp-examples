@@ -20,6 +20,7 @@ if (STATIC_ANALYSIS)
     include(cmake/lint.cmake)
 endif ()
 enable_testing()
+
 include(cmake/pmm.cmake)
 # consider grpc, but it takes a long time to compile which slows down ci.
 # set( CMAKE_OSX_ARCHITECTURES arm64)
