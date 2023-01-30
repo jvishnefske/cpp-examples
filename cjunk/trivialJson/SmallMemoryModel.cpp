@@ -229,7 +229,7 @@ void test_json_types(){
     static_assert(lc.a.index() == 1, "int should be the second type");
     JsonNode node1(true);
     JsonNode node2(false);
-    JsonNode node3(3);
+    JsonNode node3(3l);
     JsonNode node4(150.3);
     JsonNode node5("hello");
     node4 = node5;

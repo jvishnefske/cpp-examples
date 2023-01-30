@@ -10,7 +10,7 @@ if (MSVC)
         add_compile_options(/W4)
     endif()
     add_compile_options(/WX)
-else()
+else ()
     # lots of warnings and all warnings as errors
     add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif ()
@@ -20,11 +20,48 @@ if (STATIC_ANALYSIS)
     include(cmake/lint.cmake)
 endif ()
 enable_testing()
-add_library(rapidJson INTERFACE)
+
+include(cmake/pmm.cmake)
+# consider grpc, but it takes a long time to compile which slows down ci.
+# set( CMAKE_OSX_ARCHITECTURES arm64)
+# if arm osx
+message(STATUS "proc: ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "gen: ${CMAKE_GENERATOR}")
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin" )
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+        message(STATUS "arm64-osx")
+        set(VCPKG_TARGET_TRIPLET "arm64-osx")
+    else()
+        message(STATUS "x86_64-osx")
+        message(STATUS "architecture: ${CMAKE_OSX_ARCHITECTURES} ")
+        set(VCPKG_TARGET_TRIPLET "x64-osx")
+    endif()
+else()
+    message(STATUS "not osx")
+endif()
+
+pmm(VCPKG REVISION 2021.05.12 REQUIRES asio catch2) #  catch2 asio nlohmann-json)
+
+#The package asio:x86-windows provides CMake targets:
+find_package(asio CONFIG REQUIRED)
+#target_link_libraries(main PRIVATE asio asio::asio)
+#The package catch2:x86-windows provides CMake targets:
+find_package(Catch2 CONFIG REQUIRED)
+#target_link_libraries(main PRIVATE Catch2::Catch2)
+#The package grpc:x86-windows provides CMake targets:
+# find_package(gRPC)
+# Note: 6 target(s) were omitted.
+#target_link_libraries(main PRIVATE gRPC::gpr gRPC::upb gRPC::grpc gRPC::grpc++)
+find_package(nlohmann_json CONFIG REQUIRED)
+
 set(RAPIDJSON_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/rapidjson/include/")
-target_include_directories(rapidJson INTERFACE ${RAPIDJSON_INCLUDE})
-add_library(rapidJson::rapidJson ALIAS rapidJson)
+if (ENABLE_BENCHMARK)
+    add_library(rapidJson INTERFACE)
+    target_include_directories(rapidJson INTERFACE ${RAPIDJSON_INCLUDE})
+    add_library(rapidJson::rapidJson ALIAS rapidJson)
+endif ()
+
 add_executable(raii raii.cc)
-target_link_libraries(raii PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(raii PRIVATE Catch2::Catch2)
 add_test(NAME raii COMMAND $<TARGET_FILE:raii>)
 add_subdirectory(cjunk)

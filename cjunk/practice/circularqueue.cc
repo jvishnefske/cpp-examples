@@ -1,116 +1,67 @@
 #include <array>
-#include <mutex>
-#include <condition_variable>
-using GeneralType = double;
-template<class T, int size>
-// implement a std::queue container of fixed size.
-class CircularContainer{
-    std::array<T,size> m_container;
-    int head;
-    int tail;
-    std::mutex m_mutex;
-    std::condition_variable m_not_empty;
-    std::condition_variable m_not_full;
+#include <atomic>
+#include <semaphore>
+
+/**
+ * @brief Circular queue implementation.
+ *
+ * @tparam T Type of the elements in the queue.
+ * @tparam N Maximum number of elements in the queue.
+ */
+template <typename T, size_t N>
+class CircularQueue {
+    std::atomic_uint m_head, m_tail;
+    std::array<T, N> m_data;
+    std::counting_semaphore<N> m_sem_empty, m_sem_full;
 public:
-    using reference = &T;
-    void push_back();
-    void pop_front();
-    reference front();
-    reference back();
-    bool empty();
-    int size();
+    CircularQueue() : m_head(0), m_tail(0), m_sem_empty(0), m_sem_full(N) {
+        static_assert(ATOMIC_INT_LOCK_FREE, "our atomic is not lock-free");
+    }
+    /**
+     * @brief Enqueue an element, or return false if the queue is full.
+     * @param item
+     */
+    bool try_push(T const& item) {
+        if( m_sem_full.try_acquire()){
+            m_data[m_head++ % N] = item;
+            m_sem_empty.release();
+            return true;
+        }
+        return false;
+    }
+    /**
+     * @brief enqueue an element, or block until the queue is not full.
+     * @param item
+     */
+     void push(T const& item) {
+        m_sem_full.acquire();
+        m_data[m_head++ % N] = item;
+        m_sem_empty.release();
+    }
+
+    T pop() {
+        m_sem_empty.acquire();
+        T item = m_data[m_tail++ % N];
+        m_sem_full.release();
+        // Modulo is not necessary here, but it is a good idea to avoid
+        // integer overflow.
+        {
+            auto expected = m_tail.load();
+            const auto desired = expected % N;
+            // successfully stores only if we are not preempted by another thread
+            // which clobbers the variable. This eliminates the need for mutual exclusion.
+            m_tail.compare_exchange_strong(expected, desired);
+        }
+        {
+            auto expected = m_head.load();
+            const auto desired = expected % N;
+            m_head.compare_exchange_strong(expected, desired);
+        }
+        m_sem_full.post();
+        return item;
+    }
 };
-
-template<class T, int size>
-bool CircularContainer<T,size>::empty(){
-    return size() == 0;
-}
-template<class T, int size>
-int CircularContainer<T,size>::size(){
-    return (tail - head + size) % size;
-}
-template<class T, int size>
-CircularContainer<T,size>::CircularContainer(){
-    head = 0;
-    tail = 0;
-}
-template<class T, int size>
-CircularContainer<T,size>::~CircularContainer(){
-}
-template<class T, int size>
-void CircularContainer<T,size>::push_back(T& value){
-    std::unique_lock<std::mutex> lock(m_mutex);
-    while(size() == size){
-        m_not_full.wait(lock);
-    }
-    m_container[tail] = value;
-    tail = (tail + 1) % size;
-    m_not_empty.notify_one();
-}
-template<class T, int size>
-void CircularContainer<T,size>::pop_front(){
-    std::unique_lock<std::mutex> lock(m_mutex);
-    while(size() == 0){
-        m_not_empty.wait(lock);
-    }
-    head = (head + 1) % size;
-    m_not_full.notify_one();
-}
-template<class T, int size>
-T& CircularContainer<T,size>::front(){
-    std::unique_lock<std::mutex> lock(m_mutex);
-    while(size() == 0){
-        m_not_empty.wait(lock);
-    }
-    return m_container[head];
-}
-template<class T, int size>
-T& CircularContainer<T,size>::back(){
-    std::unique_lock<std::mutex> lock(m_mutex);
-    while(size() == 0){
-        m_not_empty.wait(lock);
-    }
-    return m_container[(tail - 1 + size) % size];
-}
-template<class T, int size>
-void CircularContainer<T,size>::print(){
-    std::unique_lock<std::mutex> lock(m_mutex);
-    while(size() == 0){
-        m_not_empty.wait(lock);
-    }
-    for(int i = 0; i < size; i++){
-        std::cout << m_container[(head + i) % size] << " ";
-    }
-    std::cout << std::endl;
-}
-template<class T, int size>
-void CircularContainer<T,size>::print_reverse(){
-    std::unique_lock<std::mutex> lock(m_mutex);
-    while(size() == 0){
-        m_not_empty.wait(lock);
-    }
-    for(int i = size - 1; i >= 0; i--){
-        std::cout << m_container[(head + i) % size] << " ";
-    }
-    std::cout << std::endl;
-}
-
 void test_queue(){
-    CircularContainer<GeneralType,5> queue;
-    queue.push_back(1);
-    queue.push_back(2);
-    queue.push_back(3);
-    queue.push_back(4);
-    queue.push_back(5);
-    queue.print();
-    queue.pop_front();
-    queue.print();
-    queue.pop_front();
-    queue.print();
-    queue.pop_front();
-    queue.print();
-    queue.pop_front();
-    queue.print();
-    queue.pop_front();
-    queue.print();
-   }
+    CircularQueue<int, 10> myQ{};
+//    myQ.push(1);
+};

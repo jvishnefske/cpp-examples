@@ -9,8 +9,9 @@
 using namespace std::string_literals;
 using JsonNode = Node;
 //catch benchmark random number generator
-TEST_CASE("benchmark random number generator", "[benchmark]") {
-    std::mt19937 rng;
+
+TEST_CASE("benchmark random number generator", "[.]") {
+    std::mt19937 rng{std::random_device{}()};
     BENCHMARK("random number generator") {
                                              (void) rng();
                                          };
@@ -23,9 +24,8 @@ TEST_CASE("benchmark random number generator", "[benchmark]") {
 
 TEST_CASE("serialize_float", "jsonTest") {
     JsonNode j(1.1);
-    // size is 16 on visual studio.
 
-    STATIC_REQUIRE(24 >= sizeof(JsonNode)); // we don't want this to increase.
+    CHECK(16 >= sizeof(JsonNode)); // we don't want this to increase.
     REQUIRE(j.serialize().length() > 0);
     CHECK("1.100000" == j.serialize());
 }
@@ -63,11 +63,11 @@ TEST_CASE("round_trip_conversion", "[!mayfail]") {
     std::random_device r;
     std::default_random_engine e1(r());
     std::exponential_distribution<double> rand_e(10.0);
-    for (int i = 0; i < 1000; i = i + 1) {
+    for (int i = 0; i < 1000; i++) {
         auto initial = rand_e(e1);
         std::array<char, 1000> buffer{};
         snprintf(buffer.data(), buffer.size(), "%20.20f", initial);
         auto roundTrip = std::stod(std::string(buffer.data()));
         REQUIRE(initial == roundTrip);
     }
-} 
+}
