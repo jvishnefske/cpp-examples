@@ -16,24 +16,13 @@ jobs:
       run: python3 -m pip install https://github.com/mesonbuild/meson/releases/download/1.0.0/meson-1.0.0.tar.gz && which meson
   sonarcloud:
     runs-on: ubuntu-latest
-    env:
-      BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
     steps:
-    - uses: actions/checkout@v3
-    - name: Install sonar-scanner and build-wrapper
-      uses: SonarSource/sonarcloud-github-c-cpp@v1
-    - name: Run build-wrapper
-      run: |
-        cmake -S . -B build
-        which build-wrapper-linux-x86_64 || echo "failed while looking for wrapper command"
-        which ninja || echo "ninja not found"
-        build-wrapper-linux-x86-64 --out-dir cmake-build-sonar cmake --build build || echo "failed to run wrapper command"
-    - name: run tox
-      run: python3 -m pip install tox && tox -e py
-    - name: Run sonar-scanner
-      run: |
-        which sonar-scanner
-        sonar-scanner --define sonar.cfamily.build-wrapper-output="cmake-build-sonar"
-
+    - uses: actions/checkout@v4
+      with:
+        # Disabling shallow clone is recommended for improving relevancy of reporting
+        fetch-depth: 0
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
