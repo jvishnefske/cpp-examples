@@ -35,7 +35,7 @@ TEST_CASE("serialize_float", "jsonTest") {
 TEST_CASE("serialize_empty", "jsonTest") {
     JsonNode j;
     REQUIRE(j.serialize().length() > 0);
-    CHECK("" == j.serialize());
+    CHECK("\"\"" == j.serialize());
 }
 
 TEST_CASE("serialize_string", "jsonTest") {
