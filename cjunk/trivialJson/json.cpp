@@ -3,9 +3,9 @@
 #include <ostream>
 #include <sstream>
 #include <vector>
-//#include <map>
 #include <string>
-
+#include <fmt/core.h>
+#include <iostream>
 
 // todo: add operator<< for each serialization type bson, json, etc.
 // todo convert generators to trivial constructors

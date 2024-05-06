@@ -1,6 +1,8 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.22)
 project(cpp_examples)
 option(ENABLE_BENCHMARK "compile benchmark application" OFF)
+add_compile_options(-fsanitize=undefined -Werror=all -Werror=extra)
+add_link_options(-fsanitize=undefined)
 set(FETCHCONTENT_QUIET OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # TODO: add to disable analysis
@@ -24,7 +26,7 @@ if (STATIC_ANALYSIS)
 endif ()
 include(cmake/dependencies.cmake)
 declare_dependencies()
-FetchContent_MakeAvailable(Boost Catch2)
+FetchContent_MakeAvailable(Boost Catch2 fmt)
 enable_testing()
 #include(cmake/pmm.cmake)
 
@@ -68,6 +70,7 @@ if (ENABLE_BENCHMARK)
 endif ()
 set(libraries_to_link
         Boost::boost
+        fmt::fmt
         trivialJson
         smallTrivialJson
         )

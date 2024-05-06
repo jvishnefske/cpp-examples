@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <array>
+#include <type_traits>
 
 struct Node {
     using SmallString = std::array<char, 8>;
@@ -59,10 +60,11 @@ struct Node {
 
     template<typename ...Args>
     explicit Node(Args const &... args){
+        static_assert(std::is_trivially_constructible<std::vector<Node>, Args...>::value , "possible to contruct from container");
         //auto generator = [](auto arg){return Node(arg);};
         std::vector<Node> container{ generator(args) ...  };
         //(  container.push_back(args)  ... );
-        _storage = container;
+        _storage.emplace(std::forward<Args...>(args) ...);
     }
 
     Node() = default;
