@@ -13,10 +13,9 @@ list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 add_library(smallTrivialJson SmallMemoryModel.cpp)
 add_library(trivialJson json.cpp)
 target_include_directories(trivialJson PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-find_package(Boost REQUIRED)
 target_link_libraries(trivialJson PRIVATE fmt::fmt)
 set(libraries_to_link
-        Boost::headers
+        Boost::boost
         trivialJson
         smallTrivialJson
         )
