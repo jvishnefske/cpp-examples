@@ -31,6 +31,6 @@ jobs:
         cmake -S . -B build
         which build-wrapper-linux-x86_64 || echo "failed while looking for wrapper command"
         which ninja || echo "ninja not found"
-        build-wrapper-linux-x86-64 --out-dir cmake-build-sonar cmake --build build || echo "failed to run wrapper command"
+        build-wrapper-linux-x86-64 --out-dir cmake-build-sonarcube-wrap cmake --build build || echo "failed to run wrapper command"
     - name: run tox
       run: python3 -m pip install tox && tox -e py
