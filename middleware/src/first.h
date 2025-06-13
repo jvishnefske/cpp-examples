@@ -5,6 +5,7 @@
 #ifndef MIDDLEWARE_FIRST_H
 #define MIDDLEWARE_FIRST_H
 
+#include <iostream> // Added missing include for std::cout
 
 class first {
     public:

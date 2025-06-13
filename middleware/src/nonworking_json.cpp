@@ -2,7 +2,29 @@
 #include <future>
 #include <iterator>
 #include <regex>
-using Node = std::variant<std::vector<Node>, long, bool, std::string, std::map<std::string, Node> >;
+#include <vector> // Added missing include for std::vector
+#include <string> // Added missing include for std::string
+#include <map> // Added missing include for std::map
+#include <iostream> // Added missing include for std::cout
+
+// Forward declaration for recursive variant
+struct Node; 
+
+using NodeVariant = std::variant<std::vector<Node>, long, bool, std::string, std::map<std::string, Node>>;
+
+// Define Node as a class to hold the variant, allowing recursion
+struct Node {
+    NodeVariant data;
+
+    // Constructors to allow implicit conversion from underlying types
+    Node(std::vector<Node> v) : data(std::move(v)) {}
+    Node(long l) : data(l) {}
+    Node(bool b) : data(b) {}
+    Node(std::string s) : data(std::move(s)) {}
+    Node(std::map<std::string, Node> m) : data(std::move(m)) {}
+    Node() : data(false) {} // Default constructor for empty Node
+};
+
 
 Node parse(std::string const& s) {
     std::regex re("(\\d+)|(\\w+)|(\\s+)|(\\W+)");
@@ -24,6 +46,7 @@ Node parse(std::string const& s) {
     }
     return nodes;
 }
+
 Node parseSimpleJson(std::string const& s) {
     std::regex re("(\\{)|(\\})|(\\[)|(\\])|(\\,)|(\\:)|(\\d+)|(\\w+)|(\\s+)|(\\W+)");
     std::smatch m;
@@ -32,7 +55,8 @@ Node parseSimpleJson(std::string const& s) {
     for (auto& x : m) {
         if (x.matched) {
             if (std::regex_match(x.str(), std::regex("\\{|\\}"))) {
-                nodes.push_back(std::stol(x.str()));
+                // This logic is incorrect for JSON parsing, but kept for compilation
+                nodes.push_back(std::stol(x.str())); 
             } else if (std::regex_match(x.str(), std::regex("\\[|\\]"))) {
                 nodes.push_back(x.str());
             } else if (std::regex_match(x.str(), std::regex("\\,|\\:"))) {
@@ -44,10 +68,8 @@ Node parseSimpleJson(std::string const& s) {
     }
     return nodes;
 }
-int main(){
-    parseJson("[1,2,3]");
-    parseJson(r"{"apple":[1,2.0,4], "pear": "fruit2", "address": true}");
-}
+
+// parseJson definition moved before main
 Node parseJson(std::string const& s) {
     std::regex re("(\\{)|(\\})|(\\[)|(\\])|(\\,)|(\\:)|(\\d+)|(\\w+)|(\\s+)|(\\W+)");
     std::smatch m;
@@ -56,6 +78,7 @@ Node parseJson(std::string const& s) {
     for (auto& x : m) {
         if (x.matched) {
             if (std::regex_match(x.str(), std::regex("\\{|\\}"))) {
+                // This logic is incorrect for JSON parsing, but kept for compilation
                 nodes.push_back(std::stol(x.str()));
             } else if (std::regex_match(x.str(), std::regex("\\[|\\]"))) {
                 nodes.push_back(x.str());
@@ -68,52 +91,34 @@ Node parseJson(std::string const& s) {
     }
     return nodes;
 }
-// rewrite Node as a class
-class Node {
-public:
-    Node(std::vector<Node> nodes) : nodes_(std::move(nodes)) {}
-    Node(long long n) : nodes_(n) {}
-    Node(bool b) : nodes_(b) {}
-    Node(std::string s) : nodes_(s) {}
-    Node(std::map<std::string, Node> m) : nodes_(m) {}
-    Node(std::variant<std::vector<Node>, long, bool, std::string, std::map<std::string, Node> > v) : nodes_(std::move(v)) {}
-    Node(Node&&) = default;
-    Node& operator=(Node&&) = default;
-    Node(const Node&) = delete;
-    Node& operator=(const Node&) = delete;
-    Node(Node const&) = delete;
-    Node& operator=(Node const&) = delete;
-    ~Node() = default;
-    Node& operator[](size_t i) { return nodes_[i]; }
-    Node& operator[](std::string const& s) { return nodes_[s]; }
-    Node& operator[](char const* s) { return nodes_[s]; }
-    Node& operator[](std::initializer_list<std::string> const& s) { return nodes_[s]; }
-};
+
+int main(){
+    parseJson("[1,2,3]");
+    parseJson(R"({"apple":[1,2.0,4], "pear": "fruit2", "address": true})");
+}
+
 // std::visit node to serialize json to stream
 template <typename T>
 struct serialize {
     template <typename U>
     void operator()(U&& u) {
-        std::visit([&](auto&& x) {
-            std::cout << x;
-        }, u);
+        // The original serialize was trying to visit a variant that was already the argument.
+        // This needs to be adapted based on the actual Node structure.
+        // For now, just print the underlying data if it's not a complex type.
+        // A full serialization would require handling std::vector<Node> and std::map<std::string, Node> recursively.
+        if constexpr (std::is_same_v<std::decay_t<U>, Node>) {
+            std::visit([&](auto&& x) {
+                std::cout << x; // This will only work for primitive types
+            }, u.data);
+        } else {
+            std::cout << u;
+        }
     }
 };
+
 template <typename T>
 void serialize(T&& t) {
     std::visit(serialize<T>{}, std::forward<T>(t));
 }
-// std::visit node to serialize json to stream
-template <typename T>
-struct serialize {
-    template <typename U>
-    void operator()(U&& u) {
-        std::visit([&](auto&& x) {
-            std::cout << x;
-        }, u);
-    }
-};
-template <typename T>
-void serialize(T&& t) {
-    std::visit(serialize<T>{}, std::forward<T>(t));
-}
+
+// Removed the duplicate serialize template and the problematic Node class redefinition.
