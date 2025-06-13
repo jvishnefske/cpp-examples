@@ -10,6 +10,9 @@
 #include <cmath>
 #include <complex> // Required for std::complex, std::real, std::imag, std::abs, std::arg
 
+// Define PI for portability, as M_PI is a GNU extension
+static constexpr double PI = 3.14159265358979323846;
+
 // a c++ raii class to take the complex fft from a container of doubles
 class FFT {
 public:
@@ -72,21 +75,21 @@ public:
     std::vector<double> get_real_phase() const {
         std::vector<double> ret(fft_size_);
         for (size_t i = 0; i < fft_size_; ++i) {
-            ret[i] = std::arg(fft_result_[i]) * 180 / M_PI;
+            ret[i] = std::arg(fft_result_[i]) * 180 / PI; // Use PI instead of M_PI
         }
         return ret;
     }
     std::vector<double> get_imag_phase() const {
         std::vector<double> ret(fft_size_);
         for (size_t i = 0; i < fft_size_; ++i) {
-            ret[i] = std::arg(fft_result_[i]) * 180 / M_PI;
+            ret[i] = std::arg(fft_result_[i]) * 180 / PI; // Use PI instead of M_PI
         }
         return ret;
     }
     std::vector<double> get_real_phase_unwrapped() const {
         std::vector<double> ret(fft_size_);
         for (size_t i = 0; i < fft_size_; ++i) {
-            ret[i] = std::arg(fft_result_[i]) * 180 / M_PI;
+            ret[i] = std::arg(fft_result_[i]) * 180 / PI; // Use PI instead of M_PI
             if (ret[i] < 0) {
                 ret[i] += 360;
             }
@@ -96,7 +99,7 @@ public:
     std::vector<double> get_imag_phase_unwrapped() const {
         std::vector<double> ret(fft_size_);
         for (size_t i = 0; i < fft_size_; ++i) {
-            ret[i] = std::arg(fft_result_[i]) * 180 / M_PI;
+            ret[i] = std::arg(fft_result_[i]) * 180 / PI; // Use PI instead of M_PI
             if (ret[i] < 0) {
                 ret[i] += 360;
             }
@@ -106,21 +109,21 @@ public:
     std::vector<double> get_real_phase_unwrapped_deg() const {
         std::vector<double> ret(fft_size_);
         for (size_t i = 0; i < fft_size_; ++i) {
-            ret[i] = std::arg(fft_result_[i]) * 180 / M_PI;
+            ret[i] = std::arg(fft_result_[i]) * 180 / PI; // Use PI instead of M_PI
         }
         return ret;
     }
     std::vector<double> get_imag_phase_unwrapped_deg() const {
         std::vector<double> ret(fft_size_);
         for (size_t i = 0; i < fft_size_; ++i) {
-            ret[i] = std::arg(fft_result_[i]) * 180 / M_PI;
+            ret[i] = std::arg(fft_result_[i]) * 180 / PI; // Use PI instead of M_PI
         }
         return ret;
     }
     std::vector<double> get_real_phase_unwrapped_deg_shifted() const {
         std::vector<double> ret(fft_size_);
         for (size_t i = 0; i < fft_size_; ++i) {
-            ret[i] = std::arg(fft_result_[i]) * 180 / M_PI;
+            ret[i] = std::arg(fft_result_[i]) * 180 / PI; // Use PI instead of M_PI
             if (ret[i] < 0) {
                 ret[i] += 360;
             }

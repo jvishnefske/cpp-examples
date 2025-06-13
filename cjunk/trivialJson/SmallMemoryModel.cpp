@@ -23,6 +23,9 @@ public:
 private:
     Storage storage;
 public:
+    // Add a default destructor to satisfy cppcoreguidelines-special-member-functions
+    ~JsonNode() = default;
+
     // General constructor for types directly convertible to Storage, excluding bool to avoid ambiguity
     // Removed constexpr as std::unique_ptr operations are not constexpr before C++20
     template<typename T, std::enable_if_t<std::is_convertible_v<T, Storage> && !std::is_same_v<std::decay_t<T>, bool>, bool> = true>
