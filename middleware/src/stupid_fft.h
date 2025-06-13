@@ -41,59 +41,49 @@ public:
         return fft_size_;
     }
 
-    std::vector<double> get_real() {
+    std::vector<double> get_real() const {
         std::vector<double> ret(fft_size_);
         for (size_t i = 0; i < fft_size_; ++i) {
             ret[i] = std::real(fft_result_[i]);
         }
         return ret;
     }
-    std::vector<double> get_imag() {
+    std::vector<double> get_imag() const {
         std::vector<double> ret(fft_size_);
         for (size_t i = 0; i < fft_size_; ++i) {
             ret[i] = std::imag(fft_result_[i]);
         }
         return ret;
     }
-    std::vector<double> get_abs() {
+    std::vector<double> get_abs() const {
         std::vector<double> ret(fft_size_);
         for (size_t i = 0; i < fft_size_; ++i) {
             ret[i] = std::abs(fft_result_[i]);
         }
         return ret;
     }
-    std::vector<double> get_phase() {
+    std::vector<double> get_phase() const {
         std::vector<double> ret(fft_size_);
         for (size_t i = 0; i < fft_size_; ++i) {
             ret[i] = std::arg(fft_result_[i]);
         }
         return ret;
     }
-    std::vector<double> get_real_phase() {
+    std::vector<double> get_real_phase() const {
         std::vector<double> ret(fft_size_);
         for (size_t i = 0; i < fft_size_; ++i) {
             ret[i] = std::arg(fft_result_[i]) * 180 / M_PI;
         }
         return ret;
     }
-    std::vector<double> get_imag_phase() {
+    std::vector<double> get_imag_phase() const {
         std::vector<double> ret(fft_size_);
         for (size_t i = 0; i < fft_size_; ++i) {
             ret[i] = std::arg(fft_result_[i]) * 180 / M_PI;
         }
         return ret;
     }
-    std::vector<double> get_real_phase_unwrapped() {
-        std::vector<double> ret(fft_size_);
-        for (size_t i = 0; i < fft_size_; ++i) {
-            ret[i] = std::arg(fft_result_[i]) * 180 / M_PI;
-            if (ret[i] < 0) {
-                ret[i] += 360;
-            }
-        }
-        return ret;
-    }
-    std::vector<double> get_imag_phase_unwrapped() {
+    std::vector<double> get_real_phase_unwrapped() const {
         std::vector<double> ret(fft_size_);
         for (size_t i = 0; i < fft_size_; ++i) {
             ret[i] = std::arg(fft_result_[i]) * 180 / M_PI;
@@ -103,21 +93,31 @@ public:
         }
         return ret;
     }
-    std::vector<double> get_real_phase_unwrapped_deg() {
+    std::vector<double> get_imag_phase_unwrapped() const {
+        std::vector<double> ret(fft_size_);
+        for (size_t i = 0; i < fft_size_; ++i) {
+            ret[i] = std::arg(fft_result_[i]) * 180 / M_PI;
+            if (ret[i] < 0) {
+                ret[i] += 360;
+            }
+        }
+        return ret;
+    }
+    std::vector<double> get_real_phase_unwrapped_deg() const {
         std::vector<double> ret(fft_size_);
         for (size_t i = 0; i < fft_size_; ++i) {
             ret[i] = std::arg(fft_result_[i]) * 180 / M_PI;
         }
         return ret;
     }
-    std::vector<double> get_imag_phase_unwrapped_deg() {
+    std::vector<double> get_imag_phase_unwrapped_deg() const {
         std::vector<double> ret(fft_size_);
         for (size_t i = 0; i < fft_size_; ++i) {
             ret[i] = std::arg(fft_result_[i]) * 180 / M_PI;
         }
         return ret;
     }
-    std::vector<double> get_real_phase_unwrapped_deg_shifted() {
+    std::vector<double> get_real_phase_unwrapped_deg_shifted() const {
         std::vector<double> ret(fft_size_);
         for (size_t i = 0; i < fft_size_; ++i) {
             ret[i] = std::arg(fft_result_[i]) * 180 / M_PI;
