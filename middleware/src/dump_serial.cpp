@@ -1,4 +1,5 @@
 #include <termios.h>
+#include <iostream>
 void configPort(int baud, std::string serialDevice){
     struct termios options;
     tcgetattr(serialDevice, &options);
