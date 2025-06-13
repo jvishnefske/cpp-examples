@@ -11,7 +11,7 @@
 #include <iostream>
 namespace{
 class JsonNode{
-    //template<class> static inline constexpr bool always_false_v = false;
+    template<class> static inline constexpr bool always_false_v = false;
 public:
     using Map = std::unique_ptr<std::map<std::string,JsonNode>>;
     using List = std::unique_ptr<std::vector<JsonNode>>;
@@ -21,36 +21,41 @@ public:
     using Storage = std::variant<Null, bool, long, double,SmallString, Map, List >;
 private:
     Storage storage;
-    //int64_t i;
-        public:
-    template<typename T, std::enable_if_t<std::is_convertible_v<T, Storage>, bool> = true>
+public:
+    // General constructor for types directly convertible to Storage, excluding bool to avoid ambiguity
+    template<typename T, std::enable_if_t<std::is_convertible_v<T, Storage> && !std::is_same_v<std::decay_t<T>, bool>, bool> = true>
     constexpr explicit JsonNode(const T value):storage(value){}
+    
+    // Specific constructor for bool
     constexpr explicit JsonNode(const bool b):storage(b){}
+
+    // Constructor for string literals and std::string_view
+    constexpr explicit JsonNode(std::string_view sv) {
+        if (sv.length() <= SmallString{}.size()) { // Check if it fits in SmallString
+            SmallString ss{};
+            std::copy(sv.begin(), sv.end(), ss.begin());
+            storage = ss;
+        } else {
+            storage = std::make_unique<std::string>(sv);
+        }
+    }
+
     // copy constructors could likely be shortened with some template magic.
     constexpr JsonNode(const JsonNode& arg){
-        std::visit([&](const auto& arg){
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr(std::is_same_v<T, JsonNode>)
-                storage = arg.storage;
-            else if constexpr(std::is_same_v<T, bool>)
-                storage = arg;
-            else if constexpr(std::is_same_v<T, long>)
-                storage = arg;
-            else if constexpr(std::is_same_v<T, double>)
-                storage = arg;
-            else if constexpr(std::is_same_v<T,std::unique_ptr<std::string>>)
-                storage = std::make_unique<std::string>(*arg);
-            else if constexpr(std::is_same_v<T,Map>)
-                storage = std::make_unique<Map::element_type>(*arg);
-            else if constexpr(std::is_same_v<T,List>)
-                storage = std::make_unique<List::element_type>(*arg);
-            else if constexpr(std::is_same_v<T,std::monostate>)
-                storage = arg;
-            else if constexpr(std::is_same_v<T,SmallString>)
-                storage = arg;
+        (void) always_false_v;
+        std::visit([&](const auto& arg_val){
+            using T = std::decay_t<decltype(arg_val)>;
+            if constexpr(std::is_same_v<T, bool> || std::is_same_v<T, long> || std::is_same_v<T, double> || std::is_same_v<T, std::monostate> || std::is_same_v<T, SmallString>)
+                storage = arg_val;
+            else if constexpr(std::is_same_v<T, String>)
+                storage = std::make_unique<std::string>(*arg_val);
+            else if constexpr(std::is_same_v<T, Map>)
+                storage = std::make_unique<Map::element_type>(*arg_val);
+            else if constexpr(std::is_same_v<T, List>)
+                storage = std::make_unique<List::element_type>(*arg_val);
             else
             {
-                //static_assert(always_false_v<T>,"unhandled type");
+                static_assert(always_false_v<T>,"unhandled type in copy constructor");
             }
         }, arg.storage);
     }
@@ -63,70 +68,59 @@ private:
     constexpr JsonNode& operator=(const JsonNode& arg){
         if(this==&arg)
             return *this;
-        std::visit([&](const auto& arg){
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr(std::is_same_v<T, JsonNode>)
-                storage = arg.storage;
-            else if constexpr(std::is_same_v<T, bool>)
-                storage = arg;
-            else if constexpr(std::is_same_v<T, long>)
-                storage = arg;
-            else if constexpr(std::is_same_v<T, double>)
-                storage = arg;
+        std::visit([&](const auto& arg_val){
+            using T = std::decay_t<decltype(arg_val)>;
+            if constexpr(std::is_same_v<T, bool> || std::is_same_v<T, long> || std::is_same_v<T, double> || std::is_same_v<T, std::monostate> || std::is_same_v<T, SmallString>)
+                storage = arg_val;
             else if constexpr(std::is_same_v<T,String>)
-                storage = std::make_unique<String::element_type>(*arg);
+                storage = std::make_unique<String::element_type>(*arg_val);
             else if constexpr(std::is_same_v<T,Map>)
-                storage = std::make_unique<Map::element_type>(*arg);
+                storage = std::make_unique<Map::element_type>(*arg_val);
             else if constexpr(std::is_same_v<T,List>)
-                storage = std::make_unique<List::element_type>(*arg);
-            else if constexpr(std::is_same_v<T,std::monostate>)
-                storage = arg;
-            else if constexpr(std::is_same_v<T,SmallString>)
-                storage = arg;
+                storage = std::make_unique<List::element_type>(*arg_val);
             else
                 {
-                    //static_assert(always_false_v<T>,"unhandled type");
+                    static_assert(always_false_v<T>,"unhandled type in copy assignment");
                 }
         }, arg.storage);
         return *this;
     }
-#if 0
-    constexpr std::string_view toJsonString() const{
-        std::string result;
-        std::visit([&](const auto& arg){
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr(std::is_same_v<T, JsonNode>)
-                result = arg->toJsonString();
-            else if constexpr(std::is_same_v<T, bool>)
-                result = arg?"true":"false";
-            else if constexpr(std::is_same_v<T, long>)
-                result = std::to_string(arg);
-            else if constexpr(std::is_same_v<T, double>)
-                result = std::to_string(arg);
-            else if constexpr(std::is_same_v<T,std::unique_ptr<std::string>>)
-                result = "\"" + *arg + "\"";
-            else if constexpr(std::is_same_v<T,Map>){
-                result = "{";
-                for(const auto& [key,value]:*arg){
-                    result += "\"" + key + "\":" + value.toJsonString() + ",";
-                }
-                result.back() = '}';
-            }
-            else if constexpr(std::is_same_v<T,List>){
-                result = "[";
-                for(const auto& value:*arg){
-                    result += value.toJsonString() + ",";
-                }
-                result.back() = ']';
-            }
-            else if constexpr(std::is_same_v<T,std::monostate>)
-                result = "null";
-            else
-                static_assert(always_false_v<T>, "unsupported type");
-        }, storage);
-        return result;
-    }
-#endif
+
+//    constexpr std::string_view toJsonString() const{
+//        std::string result;
+//        std::visit([&](const auto& arg){
+//            using T = std::decay_t<decltype(arg)>;
+//            if constexpr(std::is_same_v<T, JsonNode>)
+//                result = arg->toJsonString();
+//            else if constexpr(std::is_same_v<T, bool>)
+//                result = arg?"true":"false";
+//            else if constexpr(std::is_same_v<T, long>)
+//                result = std::to_string(arg);
+//            else if constexpr(std::is_same_v<T, double>)
+//                result = std::to_string(arg);
+//            else if constexpr(std::is_same_v<T,std::unique_ptr<std::string>>)
+//                result = "\"" + *arg + "\"";
+//            else if constexpr(std::is_same_v<T,Map>){
+//                result = "{";
+//                for(const auto& [key,value]:*arg){
+//                    result += "\"" + key + "\":" + value.toJsonString() + ",";
+//                }
+//                result.back() = '}';
+//            }
+//            else if constexpr(std::is_same_v<T,List>){
+//                result = "[";
+//                for(const auto& value:*arg){
+//                    result += value.toJsonString() + ",";
+//                }
+//                result.back() = ']';
+//            }
+//            else if constexpr(std::is_same_v<T,std::monostate>)
+//                result = "null";
+//            else
+//                static_assert(always_false_v<T>, "unsupported type");
+//        }, storage);
+//        return result;
+//    }
 };
 static_assert(sizeof(JsonNode)<=16);
 #if 0
@@ -229,7 +223,7 @@ public:
     static_assert(lc.a.index() == 1, "int should be the second type");
     JsonNode node1(true);
     JsonNode node2(false);
-    JsonNode node3(3l);
+    JsonNode node3(3l); // Changed to 3l to explicitly be a long literal
     JsonNode node4(150.3);
     JsonNode node5("hello");
     node4 = node5;
