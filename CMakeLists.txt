@@ -1,11 +1,14 @@
 cmake_minimum_required(VERSION 3.22)
 project(cpp_examples)
 option(ENABLE_BENCHMARK "compile benchmark application" OFF)
-add_compile_options(-Werror=all -Werror=extra)
 set(FETCHCONTENT_QUIET OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # TODO: add to disable analysis
 option(STATIC_ANALYSIS OFF)
+set(ENABLE_COVERAGE ON CACHE BOOL "Enable coverage build." FORCE)
+if(ENABLE_COVERAGE)
+    #add_compile_options(--coverage)
+endif()
 if (MSVC)
     # Force to always compile with W4
     if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
@@ -16,9 +19,9 @@ if (MSVC)
     add_compile_options(/WX)
 else ()
     # lots of warnings and all warnings as errors
-    add_compile_options(-Wall -Wextra -pedantic -Werror)
+    add_compile_options(-Werror=all -Werror=extra -Werror=pedantic)
 endif ()
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 # This block includes cmake/lint.cmake if STATIC_ANALYSIS is ON.
 # The previous duplicate inclusion has been removed.
