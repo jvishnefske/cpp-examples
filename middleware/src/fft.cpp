@@ -8,7 +8,8 @@
 // a c++ raii class to take the complex fft from a container of doubles
 class FFT {
 public:
-    FFT(const std::vector<double>& /*data*/) {
+    // Marked 'data' as [[maybe_unused]] to suppress the unused parameter warning
+    FFT(const std::vector<double>& data [[maybe_unused]]) {
 
     }
 }; // Added missing semicolon for class definition

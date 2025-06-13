@@ -28,6 +28,9 @@ struct JsonValue {
         std::unique_ptr<JsonObject>
     > data;
 
+    // Add a default destructor as per cppcoreguidelines-special-member-functions
+    ~JsonValue() = default;
+
     // Constructors for each type
     JsonValue() : data(std::monostate{}) {} // Default constructor for null
     JsonValue(bool b) : data(b) {}
@@ -112,7 +115,7 @@ struct JsonValue {
 class JsonParser {
 private:
     std::string_view json_str;
-    size_t pos;
+    size_t pos = 0; // Initialize pos with default member initializer
 
     void skip_whitespace() {
         while (pos < json_str.length() && std::isspace(json_str[pos])) {

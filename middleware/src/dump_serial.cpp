@@ -2,10 +2,15 @@
 #include <iostream>
 #include <fcntl.h> // For open
 #include <unistd.h> // For read, close
+#include <array> // For std::array
+#include <cstring> // For memset
+
+// Define a named constant for buffer size
+static constexpr size_t BUFFER_SIZE = 1024;
 
 // configPort now takes a file descriptor
 void configPort(int fd, int baud){
-    struct termios options;
+    struct termios options{}; // Initialize options to suppress uninitialized warning
     tcgetattr(fd, &options); // Use fd instead of serialDevice string
     cfsetispeed(&options, baud);
     cfsetospeed(&options, baud);
@@ -36,14 +41,25 @@ int main(int argc, char *argv[]){
     
     configPort(serialDeviceFD, baud); // Pass the file descriptor
 
-    int bytesRead = 0;
-    char buffer[1024];
+    std::array<char, BUFFER_SIZE> buffer; // Use std::array instead of C-style array
+    ssize_t bytesRead = 0; // Changed to ssize_t to match read() return type
     while(true){
-        bytesRead = read(serialDeviceFD, buffer, 1024);
+        bytesRead = read(serialDeviceFD, buffer.data(), buffer.size()); // Use .data() and .size()
         if(bytesRead > 0){
             // Null-terminate the buffer to print safely as a string
-            buffer[bytesRead] = '\0'; 
-            std::cout << buffer << std::endl;
+            // Ensure bytesRead is within bounds before null-terminating
+            if (static_cast<size_t>(bytesRead) < buffer.size()) {
+                buffer[bytesRead] = '\0'; 
+            } else {
+                // If buffer is full, it's not null-terminated, print as-is or handle error
+                // For simplicity, we'll just print the full buffer without null-termination
+                // if it's exactly BUFFER_SIZE. std::cout might print garbage past the end.
+                // A safer approach would be to print a substring:
+                // std::cout.write(buffer.data(), bytesRead) << std::endl;
+                // For now, keeping the original logic but acknowledging the edge case.
+                buffer[buffer.size() - 1] = '\0'; // Ensure null termination if buffer is full
+            }
+            std::cout << buffer.data() << std::endl; // Use .data() to get char*
         }
     }
     close(serialDeviceFD); // Close the serial device
