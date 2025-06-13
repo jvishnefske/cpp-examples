@@ -43,3 +43,5 @@ coverage.xml
 *.app
 
 cmake-build*
+.aider*
+.idea

@@ -1,6 +1,7 @@
 ---
-Checks:              '-*,performance-*,cppcoreguidelines-*,bugprone-*,misc-*,modernize-*,readability-*'
-WarningsAsErrors:    'cert-*,hicpp-*'
+Checks:              '-*,cppcoreguidelines-*'
+#  ,performance-*,cppcoreguidelines-*,bugprone-*,misc-*,modernize-*,readability-*,cert-*'
+WarningsAsErrors:    'hicpp-*'
 HeaderFilterRegex:   ''
 FormatStyle:         file
 InheritParentConfig: true

@@ -7,7 +7,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(STATIC_ANALYSIS OFF)
 set(ENABLE_COVERAGE ON CACHE BOOL "Enable coverage build." FORCE)
 if(ENABLE_COVERAGE)
-    #add_compile_options(--coverage)
+    add_compile_options(--coverage)
+    add_link_options(--coverage)
 endif()
 if (MSVC)
     # Force to always compile with W4
@@ -19,7 +20,12 @@ if (MSVC)
     add_compile_options(/WX)
 else ()
     # lots of warnings and all warnings as errors
-    add_compile_options(-Werror=all -Werror=extra -Werror=pedantic)
+    add_compile_options(
+            -Werror=all -Werror=extra -Werror=pedantic
+            -fstack-protector-strong
+            -fstack-clash-protection
+            -fcf-protection=full
+    )
 endif ()
 set(CMAKE_CXX_STANDARD 17)
 
