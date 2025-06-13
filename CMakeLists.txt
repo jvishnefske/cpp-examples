@@ -20,6 +20,8 @@ else ()
 endif ()
 set(CMAKE_CXX_STANDARD 14)
 
+# This block includes cmake/lint.cmake if STATIC_ANALYSIS is ON.
+# The previous duplicate inclusion has been removed.
 if (STATIC_ANALYSIS)
     include(cmake/lint.cmake)
 endif ()
