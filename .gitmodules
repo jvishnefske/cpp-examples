@@ -4,6 +4,3 @@
 [submodule "vendor-dds/foonathan_memory_vendor"]
 	path = vendor-dds/foonathan_memory_vendor
 	url = https://github.com/eProsima/foonathan_memory_vendor
-[submodule "external/Catch2"]
-	path = external/Catch2
-	url = https://github.com/catchorg/Catch2.git

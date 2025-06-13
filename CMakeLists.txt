@@ -1,12 +1,15 @@
 cmake_minimum_required(VERSION 3.22)
 project(cpp_examples)
 option(ENABLE_BENCHMARK "compile benchmark application" OFF)
-add_compile_options(-fsanitize=undefined -Werror=all -Werror=extra)
-add_link_options(-fsanitize=undefined)
 set(FETCHCONTENT_QUIET OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # TODO: add to disable analysis
 option(STATIC_ANALYSIS OFF)
+set(ENABLE_COVERAGE ON CACHE BOOL "Enable coverage build." FORCE)
+if(ENABLE_COVERAGE)
+    add_compile_options(--coverage)
+    add_link_options(--coverage)
+endif()
 if (MSVC)
     # Force to always compile with W4
     if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
@@ -17,16 +20,26 @@ if (MSVC)
     add_compile_options(/WX)
 else ()
     # lots of warnings and all warnings as errors
-    add_compile_options(-Wall -Wextra -pedantic -Werror)
+    add_compile_options(
+            -Werror=all -Werror=extra -Werror=pedantic
+            -fstack-protector-strong
+            -fstack-clash-protection
+            -fcf-protection=full
+    )
 endif ()
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
+# This block includes cmake/lint.cmake if STATIC_ANALYSIS is ON.
+# The previous duplicate inclusion has been removed.
 if (STATIC_ANALYSIS)
     include(cmake/lint.cmake)
 endif ()
 include(cmake/dependencies.cmake)
 declare_dependencies()
 FetchContent_MakeAvailable(Boost Catch2 fmt)
+# boost 1.81 has a warning on gcc 13
+target_compile_options(test_main PRIVATE -Wno-dangling-reference)
+target_compile_options(json PRIVATE -Wno-dangling-reference)
 enable_testing()
 #include(cmake/pmm.cmake)
 

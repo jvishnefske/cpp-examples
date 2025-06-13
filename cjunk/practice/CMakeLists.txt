@@ -6,10 +6,12 @@ check_include_file(sendfile.h SENDFILE)
 if(SENDFILE)
     add_executable(sendFile sendFile.cc)
 endif(SENDFILE)
+find_package(Threads)
+
 add_executable(isatty isatty.cc)
 add_executable(asyncStdin asyncStdin.cc)
-find_library(PTHREAD pthread REQUIRED)
-target_link_libraries(asyncStdin PRIVATE ${practice_libraries} ${PTHREAD})
+target_link_libraries(asyncStdin PRIVATE ${practice_libraries} Threads::Threads)
+
 
 # compile everything as a library
 file(GLOB practice_sources *.cc)

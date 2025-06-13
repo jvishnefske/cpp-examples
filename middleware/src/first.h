@@ -5,10 +5,11 @@
 #ifndef MIDDLEWARE_FIRST_H
 #define MIDDLEWARE_FIRST_H
 
+#include <iostream> // Added missing include for std::cout
 
 class first {
     public:
-        void otherFunction(bool value){
+        void otherFunction(bool value) const { // Added 'const' as the function does not modify the object's state.
             if(value){
                 std::cout << "true" << std::endl;
             }else{
