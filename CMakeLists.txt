@@ -37,6 +37,9 @@ endif ()
 include(cmake/dependencies.cmake)
 declare_dependencies()
 FetchContent_MakeAvailable(Boost Catch2 fmt)
+# boost 1.81 has a warning on gcc 13
+target_compile_options(test_main PRIVATE -Wno-dangling-reference)
+target_compile_options(json PRIVATE -Wno-dangling-reference)
 enable_testing()
 #include(cmake/pmm.cmake)
 
