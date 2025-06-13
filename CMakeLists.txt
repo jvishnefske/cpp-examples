@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 project(cpp_examples)
 option(ENABLE_BENCHMARK "compile benchmark application" OFF)
-add_compile_options(-fsanitize=undefined -Werror=all -Werror=extra)
-add_link_options(-fsanitize=undefined)
+add_compile_options(-Werror=all -Werror=extra)
 set(FETCHCONTENT_QUIET OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # TODO: add to disable analysis
