@@ -42,7 +42,10 @@ public:
 
     // copy constructors could likely be shortened with some template magic.
     constexpr JsonNode(const JsonNode& arg){
-        (void) always_false_v;
+        // The line `(void) always_false_v;` was syntactically incorrect here.
+        // `always_false_v` is a variable template and requires a template argument,
+        // typically used within `static_assert` for dependent types.
+        // It serves no functional purpose outside of that context.
         std::visit([&](const auto& arg_val){
             using T = std::decay_t<decltype(arg_val)>;
             if constexpr(std::is_same_v<T, bool> || std::is_same_v<T, long> || std::is_same_v<T, double> || std::is_same_v<T, std::monostate> || std::is_same_v<T, SmallString>)
