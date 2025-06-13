@@ -6,6 +6,8 @@
 #define MIDDLEWARE_STUPID_FFT_H
 
 #include "fftw3.h"
+#include <vector>
+#include <cmath>
 
 // a c++ raii class to take the complex fft from a container of doubles
 class FFT {
