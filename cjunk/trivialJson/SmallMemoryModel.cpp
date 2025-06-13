@@ -18,7 +18,7 @@ public:
     using String = std::unique_ptr<std::string>;
     using Null = std::monostate;
     using SmallString = std::array<char, 8>;
-    using Storage = std::variant<Null, bool, long, double,SmallString, Map, List >;
+    using Storage = std::variant<Null, bool, long, double,SmallString, String, Map, List >;
 private:
     Storage storage;
 public:
