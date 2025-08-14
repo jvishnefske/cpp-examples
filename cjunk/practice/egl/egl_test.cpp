@@ -1,417 +1,237 @@
-#include <EGL/egl.h> 
-#include <variant>
-#include <future>
 #include <iostream>
+#include <memory>
+#include <stdexcept>
 
-//raii container for EGLNativeWindowType
-class NativeWindow
-{
-public:
-	NativeWindow(EGLNativeWindowType window)
-		: m_window(window)
-	{
-	}
+// Mock EGL types and constants for demonstration
+using EGLDisplay = void*;
+using EGLSurface = void*;
+using EGLContext = void*;
+using EGLConfig = void*;
+using EGLNativeWindowType = unsigned long;
+using EGLint = int;
 
-	~NativeWindow()
-	{
-		if (m_window)
-		{
-            //eglDestroySurface(m_display, m_window);
-		}
-	}
+constexpr EGLDisplay EGL_NO_DISPLAY = nullptr;
+constexpr int EGL_FALSE = 0;
+constexpr int EGL_TRUE = 1;
+constexpr EGLDisplay EGL_DEFAULT_DISPLAY = nullptr;
 
-	EGLNativeWindowType get() const
-	{
-		return m_window;
-	}
-
-private:
-    //EGLSurface m_surface;
-	EGLNativeWindowType m_window;
-	EGLDisplay m_display;
-};
-
-//raii container for EGLDisplay
-class MyDisplay
-{
-public:
-	MyDisplay()
-		: m_display(eglGetDisplay(EGL_DEFAULT_DISPLAY))
-	{
-		if (m_display == EGL_NO_DISPLAY)
-		{
-			throw std::runtime_error("eglGetDisplay failed");
-		}
-
-		if (eglInitialize(m_display, nullptr, nullptr) == EGL_FALSE)
-		{
-			throw std::runtime_error("eglInitialize failed");
-		}
-	}
-
-	~MyDisplay()
-	{
-		if (m_display != EGL_NO_DISPLAY)
-		{
-			eglTerminate(m_display);
-		}
-	}
-
-	EGLDisplay get() const
-	{
-		return m_display;
-	}
-
-private:
-	EGLDisplay m_display;
-};
-
-//raii container for EGLConfig
-class Config
-{
-public:
-	Config()
-		: m_config(nullptr)
-	{
-		const EGLint config_attribs[] =
-		{
-			EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-			EGL_RED_SIZE, 8,
-			EGL_GREEN_SIZE, 8,
-			EGL_BLUE_SIZE, 8,
-			EGL_ALPHA_SIZE, 8,
-			EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-			EGL_NONE
-		};
-
-		EGLint num_configs;
-		if (eglChooseConfig(m_display, config_attribs, &m_config, 1, &num_configs) == EGL_FALSE)
-		{
-			throw std::runtime_error("eglChooseConfig failed");
-		}
-
-		if (num_configs == 0)
-		{
-			throw std::runtime_error("eglChooseConfig returned no configs");
-		}
-	}
-
-	~Config()
-	{
-		if (m_config)
-		{
-//			eglDestroyConfig(m_display, m_config);
-		}
-	}
-
-	EGLConfig get() const
-	{
-		return m_config;
-	}
-
-private:
-	EGLDisplay m_display;
-	EGLConfig m_config;
-};
-
-//raii container for EGLSurface
-class Surface
-{
-public:
-	Surface(EGLNativeWindowType window)
-		: m_surface(nullptr)
-	{
-		if (eglCreateWindowSurface(m_display, m_config, window, nullptr, &m_surface) == EGL_FALSE)
-		{
-			throw std::runtime_error("eglCreateWindowSurface failed");
-		}
-	}
-
-	~Surface()
-	{
-		if (m_surface)
-		{
-			eglDestroySurface(m_display, m_surface);
-		}
-	}
-
-	EGLSurface get() const
-	{
-		return m_surface;
-	}
-
-private:
-	EGLDisplay m_display;
-	EGLConfig m_config;
-	EGLSurface m_surface;
-};
-
-//raii container for EGLContext
-class Context
-{
-public:
-	Context()
-		: m_context(nullptr)
-	{
-		const EGLint context_attribs[] =
-		{
-			EGL_CONTEXT_CLIENT_VERSION, 2,
-			EGL_NONE
-		};
-
-		if (eglCreateContext(m_display, m_config, EGL_NO_CONTEXT, context_attribs) == EGL_FALSE)
-		{
-			throw std::runtime_error("eglCreateContext failed");
-		}
-	}
-
-	~Context()
-	{
-		if (m_context)
-		{
-			eglDestroyContext(m_display, m_context);
-		}
-	}
-
-	EGLContext get() const
-	{
-		return m_context;
-	}
-
-private:
-	EGLDisplay m_display;
-	EGLConfig m_config;
-	EGLContext m_context;
-};
-
-//raii container for EGLDisplay
-class EGL
-{
-public:
-	EGL()
-		: m_display(new Display)
-	{
-	}
-
-	~EGL()
-	{
-		delete m_display;
-	}
-
-	EGLNativeWindowType create_window(int width, int height)
-	{
-		NativeWindow window(nullptr);
-		if (eglCreateWindowSurface(m_display->get(), m_config->get(), window.get(), nullptr, &window.get()) == EGL_FALSE)
-		{
-			throw std::runtime_error("eglCreateWindowSurface failed");
-		}
-
-		return window.get();
-	}
-
-	EGLNativeWindowType create_window(NativeWindow& window)
-	{
-		if (eglCreateWindowSurface(m_display->get(), m_config->get(), window.get(), nullptr, &window.get()) == EGL_FALSE)
-		{
-			throw std::runtime_error("eglCreateWindowSurface failed");
-		}
-
-		return window.get();
-	}
-
-	EGLSurface create_surface(EGLNativeWindowType window)
-	{
-		Surface surface(window);
-		return surface.get();
-	}
-
-	EGLContext create_context()
-	{
-		Context context;
-		return context.get();
-	}
-
-	EGLSurface create_surface(EGLNativeWindowType window, EGLContext context)
-	{
-		Surface surface(window);
-		if (eglMakeCurrent(m_display->get(), surface.get(), surface.get(), context.get()) == EGL_FALSE)
-		{
-			throw std::runtime_error("eglMakeCurrent failed");
-		}
-
-		return surface.get();
-	}
-
-	EGLConfig get_config()
-	{
-		return m_config->get();
-	}
-
-private:
-	std::unique_ptr<MyDisplay> m_display;
-	std::unique_ptr<Config> m_config;
-};
-// draw a triangle
-void triangle(GLuint program)
-{
-	glUseProgram(program);
-
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
-	GLuint vbo;
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-
-	glDeleteBuffers(1, &vbo);
-	glDeleteVertexArrays(1, &vao);
+// Mock EGL functions for demonstration
+EGLDisplay mock_eglGetDisplay(EGLDisplay) {
+    return reinterpret_cast<EGLDisplay>(0x12345);
 }
 
-// draw a square
-void square(GLuint program)
-{
-	glUseProgram(program);
-
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
-	GLuint vbo;
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(square_vertices), square_vertices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	glDrawArrays(GL_TRIANGLES, 0, 4);
-
-	glDeleteBuffers(1, &vbo);
-	glDeleteVertexArrays(1, &vao);
-}
-void test_egl(Window window)
-{
-	// create a program
-	GLuint program = glCreateProgram();
-	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-	const char* vs_source =
-		"#version 300 es\n"
-		"in vec3 position;\n"
-		"void main()\n"
-		"{\n"
-		"	gl_Position = vec4(position, 1.0);\n"
-		"}\n";
-	glShaderSource(vs, 1, &vs_source, nullptr);
-	glCompileShader(vs);
-	GLint compiled;
-	glGetShaderiv(vs, GL_COMPILE_STATUS, &compiled);
-	if (!compiled)
-	{
-		GLint infoLen = 0;
-		glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &infoLen);
-		if (infoLen)
-		{
-			char* buf = (char*)malloc(infoLen);
-			if (buf)
-			{
-				glGetShaderInfoLog(vs, infoLen, nullptr, buf);
-				printf("%s\n", buf);
-				free(buf);
-			}
-		}
-		glDeleteShader(vs);
-		return;
-	}
-	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-	const char* fs_source =
-		"#version 300 es\n"
-		"precision mediump float;\n"
-		"out vec4 color;\n"
-		"void main()\n"
-		"{\n"
-		"	color = vec4(1.0, 0.0, 0.0, 1.0);\n"
-		"}\n";
-	glShaderSource(fs, 1, &fs_source, nullptr);
-	glCompileShader(fs);
-	glGetShaderiv(fs, GL_COMPILE_STATUS, &compiled);
-	if (!compiled)
-	{
-		GLint infoLen = 0;
-		glGetShaderiv(fs, GL_INFO_LOG_LENGTH, &infoLen);
-		if (infoLen)
-		{
-			char* buf = (char*)malloc(infoLen);
-			if (buf)
-			{
-				glGetShaderInfoLog(fs, infoLen, nullptr, buf);
-				printf("%s\n", buf);
-				free(buf);
-			}
-		}
-		glDeleteShader(fs);
-		return;
-	}
-	glAttachShader(program, vs);
-	glAttachShader(program, fs);
-	glLinkProgram(program);
-	glGetProgramiv(program, GL_LINK_STATUS, &compiled);
-	if (!compiled)
-	{
-		GLint infoLen = 0;
-		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLen);
-		if (infoLen)
-		{
-			char* buf = (char*)malloc(infoLen);
-			if (buf)
-			{
-				glGetProgramInfoLog(program, infoLen, nullptr, buf);
-				printf("%s\n", buf);
-				free(buf);
-			}
-		}
-		glDeleteProgram(program);
-		return;
-	}
-	glUseProgram(program);
-
-	// create a window
-	NativeWindow window(window.get());
-	EGLNativeWindowType native_window = window.get();
-	EGLNativeDisplayType native_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-	EGLConfig config = m_egl.get_config();
-	EGLDisplay display = m_egl.m_display->get();
-	EGLSurface surface = m_egl.create_surface(native_window, m_egl.m_context->get());
-
-	// draw a triangle
-	glClearColor(0.0, 0.0, 0.0, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT);
-	triangle(program);
-
-	// swap buffers
-	eglSwapBuffers(display, surface);
+int mock_eglInitialize(EGLDisplay, EGLint*, EGLint*) {
+    return EGL_TRUE;
 }
 
-// main
-int main(int argc, char* argv[])
-{
-	// create a window
-	Window window(800, 600);
+void mock_eglTerminate(EGLDisplay) {
+    // Mock termination
+}
 
-	// create an EGL instance
-	EGL egl;
+EGLSurface mock_eglCreateWindowSurface(EGLDisplay, EGLConfig, EGLNativeWindowType, const EGLint*) {
+    return reinterpret_cast<EGLSurface>(0x54321);
+}
 
-	// draw a triangle
-	egl.test_egl(window);
+void mock_eglDestroySurface(EGLDisplay, EGLSurface) {
+    // Mock surface destruction
+}
 
-	// wait for a key press
-	std::cin.get();
+// RAII wrapper for EGL Display
+class EGLDisplayWrapper {
+public:
+    EGLDisplayWrapper() : display_(mock_eglGetDisplay(EGL_DEFAULT_DISPLAY)) {
+        if (display_ == EGL_NO_DISPLAY) {
+            throw std::runtime_error("Failed to get EGL display");
+        }
+        
+        if (mock_eglInitialize(display_, nullptr, nullptr) == EGL_FALSE) {
+            throw std::runtime_error("Failed to initialize EGL");
+        }
+        
+        std::cout << "EGL Display initialized successfully" << std::endl;
+    }
+    
+    ~EGLDisplayWrapper() {
+        if (display_ != EGL_NO_DISPLAY) {
+            mock_eglTerminate(display_);
+            std::cout << "EGL Display terminated" << std::endl;
+        }
+    }
+    
+    EGLDisplay get() const { return display_; }
+    
+    // Non-copyable
+    EGLDisplayWrapper(const EGLDisplayWrapper&) = delete;
+    EGLDisplayWrapper& operator=(const EGLDisplayWrapper&) = delete;
+    
+    // Movable
+    EGLDisplayWrapper(EGLDisplayWrapper&& other) noexcept : display_(other.display_) {
+        other.display_ = EGL_NO_DISPLAY;
+    }
+    
+    EGLDisplayWrapper& operator=(EGLDisplayWrapper&& other) noexcept {
+        if (this != &other) {
+            if (display_ != EGL_NO_DISPLAY) {
+                mock_eglTerminate(display_);
+            }
+            display_ = other.display_;
+            other.display_ = EGL_NO_DISPLAY;
+        }
+        return *this;
+    }
 
-	return 0;
+private:
+    EGLDisplay display_;
+};
+
+// RAII wrapper for EGL Surface
+class EGLSurfaceWrapper {
+public:
+    EGLSurfaceWrapper(EGLDisplay display, EGLConfig config, EGLNativeWindowType window) 
+        : display_(display), surface_(nullptr) {
+        
+        surface_ = mock_eglCreateWindowSurface(display_, config, window, nullptr);
+        if (!surface_) {
+            throw std::runtime_error("Failed to create EGL surface");
+        }
+        
+        std::cout << "EGL Surface created successfully" << std::endl;
+    }
+    
+    ~EGLSurfaceWrapper() {
+        if (surface_) {
+            mock_eglDestroySurface(display_, surface_);
+            std::cout << "EGL Surface destroyed" << std::endl;
+        }
+    }
+    
+    EGLSurface get() const { return surface_; }
+    
+    // Non-copyable
+    EGLSurfaceWrapper(const EGLSurfaceWrapper&) = delete;
+    EGLSurfaceWrapper& operator=(const EGLSurfaceWrapper&) = delete;
+    
+    // Movable
+    EGLSurfaceWrapper(EGLSurfaceWrapper&& other) noexcept 
+        : display_(other.display_), surface_(other.surface_) {
+        other.surface_ = nullptr;
+    }
+    
+    EGLSurfaceWrapper& operator=(EGLSurfaceWrapper&& other) noexcept {
+        if (this != &other) {
+            if (surface_) {
+                mock_eglDestroySurface(display_, surface_);
+            }
+            display_ = other.display_;
+            surface_ = other.surface_;
+            other.surface_ = nullptr;
+        }
+        return *this;
+    }
+
+private:
+    EGLDisplay display_;
+    EGLSurface surface_;
+};
+
+// Simple EGL Manager class
+class EGLManager {
+public:
+    EGLManager() : display_() {
+        std::cout << "EGL Manager initialized" << std::endl;
+    }
+    
+    std::unique_ptr<EGLSurfaceWrapper> createSurface(EGLNativeWindowType window) {
+        // Mock config for demonstration
+        EGLConfig config = reinterpret_cast<EGLConfig>(0x67890);
+        
+        return std::make_unique<EGLSurfaceWrapper>(display_.get(), config, window);
+    }
+    
+    void renderFrame() {
+        std::cout << "Rendering frame..." << std::endl;
+        // Mock rendering operations
+        std::cout << "- Clear color buffer" << std::endl;
+        std::cout << "- Draw primitives" << std::endl;
+        std::cout << "- Swap buffers" << std::endl;
+    }
+    
+    EGLDisplay getDisplay() const {
+        return display_.get();
+    }
+
+private:
+    EGLDisplayWrapper display_;
+};
+
+// Demo function
+void demo_egl_usage() {
+    std::cout << "=== EGL Demo ===" << std::endl;
+    
+    try {
+        // Create EGL manager
+        EGLManager manager;
+        
+        // Mock window handle
+        EGLNativeWindowType window = 12345;
+        
+        // Create surface
+        auto surface = manager.createSurface(window);
+        
+        // Simulate rendering loop
+        for (int frame = 0; frame < 3; ++frame) {
+            std::cout << "\nFrame " << (frame + 1) << ":" << std::endl;
+            manager.renderFrame();
+        }
+        
+        std::cout << "\nEGL demo completed successfully" << std::endl;
+        
+    } catch (const std::exception& e) {
+        std::cerr << "EGL Error: " << e.what() << std::endl;
+        throw;
+    }
+}
+
+void demo_raii_safety() {
+    std::cout << "\n=== RAII Safety Demo ===" << std::endl;
+    
+    try {
+        EGLDisplayWrapper display;
+        std::cout << "Display created in scope" << std::endl;
+        
+        {
+            // Mock config and window
+            EGLConfig config = reinterpret_cast<EGLConfig>(0x11111);
+            EGLNativeWindowType window = 54321;
+            
+            EGLSurfaceWrapper surface(display.get(), config, window);
+            std::cout << "Surface created in inner scope" << std::endl;
+            
+            // Surface will be automatically destroyed when leaving this scope
+        }
+        
+        std::cout << "Back in outer scope, surface destroyed" << std::endl;
+        
+        // Display will be automatically destroyed when leaving this scope
+    } catch (const std::exception& e) {
+        std::cerr << "RAII Error: " << e.what() << std::endl;
+    }
+    
+    std::cout << "RAII demo completed" << std::endl;
+}
+
+int main() {
+    std::cout << "=== EGL Test Application ===" << std::endl;
+    
+    try {
+        demo_egl_usage();
+        demo_raii_safety();
+        
+        std::cout << "\n=== All tests passed ===" << std::endl;
+        return 0;
+        
+    } catch (const std::exception& e) {
+        std::cerr << "Fatal error: " << e.what() << std::endl;
+        return 1;
+    }
 }

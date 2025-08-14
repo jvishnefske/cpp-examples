@@ -64,12 +64,12 @@ struct JsonVisitor : Node {
     }
 };
 
-auto operator<<(std::ostream &os, Node object) -> std::ostream& {
+std::ostream& operator<<(std::ostream &os, const Node &object) {
     os << object.serialize();
     return os;
 }
 
-std::string Node::serialize() {
+std::string Node::serialize() const {
     std::ostringstream oss;
     JsonVisitor v;
     //return visit(v);

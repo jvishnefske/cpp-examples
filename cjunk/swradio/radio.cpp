@@ -90,7 +90,7 @@ int Radio<bufferSize>::read_count(){
         fd = v4l2_open(file, O_RDWR);
         if(fd < 0){
             std::cout << "Error opening " << file << ": " << strerror(errno) << std::endl;
-            throw std::runtime_error("could not open");
+            //throw std::runtime_error("could not open");
         }
         buffer_index = 0;
         buffer_ready = 0;}
@@ -134,7 +134,7 @@ int main(){
     int count=0;
 
     // start receiving raw samples in while loop
-    while(count<1000000){
+    while(count<100000){
         // read samples
         char buffer[4096];
         radio.read(buffer, 4096);

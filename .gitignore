@@ -5,6 +5,7 @@
 Testing/
 #vim
 *.swp
+build
 
 #reports 
 coverage.xml

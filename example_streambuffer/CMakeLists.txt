@@ -1,5 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
-project(untitled)
+
 set(CMAKE_CXX_STANDARD 14)
 
 #set(GTEST_ROOT /home/vis75817/build/googletest)
@@ -15,4 +14,7 @@ else()
 endif()
 
 
-add_library(untitled library.cpp library.h testHello.cpp)
+add_library(streaming library.cpp library.h )
+add_executable(test_streaming testHello.cpp)
+add_test(test_streaming test_streaming)
+target_link_libraries(test_streaming GTest::gtest_main)

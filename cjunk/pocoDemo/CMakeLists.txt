@@ -1,4 +1,5 @@
-#find_package(Poco REQUIRED Net JSON)
-add_executable(PocoDemo main.cpp)
-target_link_libraries(PocoJunk Poco::Net)
-add_test(PocoJunk PocoDemo
+find_package(Poco REQUIRED Net)
+
+add_executable(PocoDemo poco_demo.cpp)
+target_link_libraries(PocoDemo Poco::Net)
+add_test(PocoDemo PocoDemo)

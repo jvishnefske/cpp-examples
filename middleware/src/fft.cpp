@@ -9,7 +9,7 @@
 class FFT {
 public:
     // Marked 'data' as [[maybe_unused]] to suppress the unused parameter warning
-    FFT(const std::vector<double>& data [[maybe_unused]]) {
+    explicit FFT(const std::vector<double>& data [[maybe_unused]]) {
 
     }
 }; // Added missing semicolon for class definition

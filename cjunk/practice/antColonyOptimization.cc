@@ -94,6 +94,7 @@ private:
 //The following code runs the ACO algorithm on the TSP problem.
 
 void test_aco(int ants, int iterations, double alpha, double beta, double rho, double q0) {
+    (void)ants; (void)iterations; (void)alpha; (void)beta; (void)rho; (void)q0;
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<int> dis(2, 20);
@@ -170,7 +171,7 @@ public:
     double get_visibility(int i) {
         double visibility = 0.0;
         for (size_t j = 0; j < coordinates.size(); ++j) {
-            if (i != static_cast<size_t>(j)) {
+            if (static_cast<size_t>(i) != j) {
                 visibility += 1.0 / get_distance(i, j);
             }
         }

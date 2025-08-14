@@ -64,7 +64,7 @@ TEST(HelloTests, example1 ){
     out << "31 hexadecimal: "
         << std::hex << 31 << std::endl;
     // note that the line ending is platform -dependent.
-    const std::string expected = "31 HEXADECIMAL: 1F\\n2343 SOM INFO !!\\n";
+    const std::string expected = "31 HEXADECIMAL: 1F\n2343 SOM INFO !!\n";
     out << "2343 som info !!" << std::endl;
     std::cout<< "example1 complete."<<std::endl;
     EXPECT_EQ(ob.dump(), expected);

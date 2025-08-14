@@ -1,7 +1,8 @@
-#include <asio.hpp>
+#include "boost/asio.hpp"
 #include <future>
 #include <variant>
 #include <queue>
+namespace asio = boost::asio;
 class WebSocketServer{
 public:
     WebSocketServer(int port,const std::string address, handler);

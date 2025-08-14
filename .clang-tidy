@@ -1,7 +1,7 @@
 ---
-Checks:              '-*,cppcoreguidelines-*'
-#  ,performance-*,cppcoreguidelines-*,bugprone-*,misc-*,modernize-*,readability-*,cert-*'
-WarningsAsErrors:    'hicpp-*'
+# do while is present in catch macro
+Checks:              'hicpp-*,cppcoreguidelines-*,-cppcoreguidelines-avoid-do-while'
+WarningsAsErrors:    'hicpp-*,cppcoreguidelines-*,-cppcoreguidelines-avoid-do-while'
 HeaderFilterRegex:   ''
 FormatStyle:         file
 InheritParentConfig: true

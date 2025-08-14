@@ -73,4 +73,77 @@ TEST_CASE("round_trip_conversion", "[!mayfail]") {
 
         REQUIRE_THAT(initial, Catch::Matchers::WithinRel(roundTrip, 0.001));
     }
-} 
+}
+
+// Additional tests for 100% coverage
+TEST_CASE("serialize_list", "jsonTest") {
+    // Create a list to test ListPtr serialization
+    auto list = std::make_shared<std::vector<JsonNode>>();
+    list->emplace_back(JsonNode(42L));
+    list->emplace_back(JsonNode(1.5));
+    
+    JsonNode j(list);
+    REQUIRE(j.serialize().length() > 0);
+    CHECK("[42,1.500000]" == j.serialize());
+}
+
+TEST_CASE("serialize_empty_list", "jsonTest") {
+    // Test empty list case
+    auto list = std::make_shared<std::vector<JsonNode>>();
+    JsonNode j(list);
+    REQUIRE(j.serialize().length() > 0);
+    CHECK("[]" == j.serialize());
+}
+
+TEST_CASE("serialize_null_list", "jsonTest") {
+    // Test nullptr ListPtr case (triggers "nullptr!!!" debug output)
+    JsonNode::ListPtr nullList;
+    JsonNode j(nullList);
+    REQUIRE(j.serialize().length() > 0);
+    CHECK("nullptr!!!" == j.serialize());
+}
+
+TEST_CASE("test_inequality_operator", "jsonTest") {
+    JsonNode j1(42L);
+    JsonNode j2(43L);
+    JsonNode j3(42L);
+    
+    CHECK(j1 != j2);
+    CHECK_FALSE(j1 != j3);
+}
+
+TEST_CASE("test_smallstring_serialization", "jsonTest") {
+    // Test SmallString path in JsonVisitor
+    JsonNode::SmallString smallStr{};
+    std::copy_n("test", 4, smallStr.data());
+    JsonNode j(smallStr);
+    
+    REQUIRE(j.serialize().length() > 0);
+    // Should contain the quoted string
+    CHECK(j.serialize().find("test") != std::string::npos);
+}
+
+TEST_CASE("test_char_constructor", "jsonTest") {
+    // Test char* constructor (creates SmallString, max 8 chars)
+    const char* shortString = "test123";
+    JsonNode j(shortString);
+    
+    REQUIRE(j.serialize().length() > 0);
+    std::string serialized = j.serialize();
+    CHECK(serialized.find("test123") != std::string::npos);
+}
+
+TEST_CASE("test_integer_constructor", "jsonTest") {
+    // Use int64_t to avoid ambiguity  
+    JsonNode j_int(static_cast<int64_t>(42));
+    
+    REQUIRE(j_int.serialize().length() > 0);
+    CHECK("42" == j_int.serialize());
+}
+
+TEST_CASE("test_ostream_operator", "jsonTest") {
+    JsonNode j(static_cast<int64_t>(42));
+    std::ostringstream oss;
+    oss << j;
+    CHECK("42" == oss.str());
+}
