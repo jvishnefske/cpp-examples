@@ -29,7 +29,7 @@ coverage: test
 # Run static analysis
 lint: build
 	@echo "=== Running static analysis ==="
-	@files=$$(find middleware cjunk/trivialJson -name "*.cpp" -o -name "*.cc" 2>/dev/null); \
+	@files=$$(find middleware cjunk -name "*.cpp" -o -name "*.cc" 2>/dev/null); \
 	if [ -n "$$files" ]; then \
 		clang-tidy -p $(BUILD_DIR) $$files; \
 	else \

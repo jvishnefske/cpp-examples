@@ -11,13 +11,16 @@ endif()
 # check if the header exists in /usr/include
 find_file(VIDEO_INCLUDE_FILE NAMES videodev2.h HINTS "/usr/include/linux")
 if(VIDEO_INCLUDE_FILE)
-    # Create the executable and link against the v4l2 library
+    # Build the working radio.cpp version
     add_executable(radio_demo radio.cpp)
     target_link_libraries(radio_demo PRIVATE ${RADIO_LIB2_LIBRARIES})
     target_include_directories(radio_demo PRIVATE ${RADIO_LIB2_INCLUDE_DIRS})
     target_compile_options(radio_demo PRIVATE ${RADIO_LIB2_CFLAGS_OTHER})
     target_compile_features(radio_demo PRIVATE cxx_std_17)
-    add_test(radio_demo radio_demo)
+    add_test(NAME radio_demo COMMAND radio_demo)
+    
+    # Note: main.cpp references unimplemented functions in radio.hpp
+    # It would need additional implementation files to work
 else()
     message(FATAL_ERROR "videodev2.h not found, skipping radio_demo")
 endif()

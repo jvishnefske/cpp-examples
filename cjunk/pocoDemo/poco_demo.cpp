@@ -40,8 +40,9 @@ void demo_thread_features() {
     std::cout << "=== Thread Features Demo ===" << std::endl;
     
     // Test thread sleep functionality
+    constexpr long SLEEP_DURATION_MS = 10;
     auto start = std::chrono::steady_clock::now();
-    Poco::Thread::sleep(10);
+    Poco::Thread::sleep(SLEEP_DURATION_MS);
     auto end = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     

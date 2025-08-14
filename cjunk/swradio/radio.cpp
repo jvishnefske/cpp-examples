@@ -2,15 +2,20 @@
 #include <iostream>
 #include <cstring>
 #include <chrono>
+#include <array>
 
 #include <fcntl.h>
 #include <cerrno>
 #include <sys/ioctl.h>
 #include <linux/videodev2.h>
-#include <array>
 #include <libv4l2.h>
 
 namespace{
+// Constants to avoid magic numbers
+constexpr unsigned int DEFAULT_FREQUENCY_HZ = 140000000U;
+constexpr int MAX_READ_COUNT = 100000;
+constexpr int BUFFER_SIZE = 4096;
+
 template<int bufferSize>
 class Radio {
 private:
@@ -21,33 +26,52 @@ private:
     //std::array<char, 4096> buffer;
     int buffer_ready;
 public:
-    Radio(const char *file);
+    explicit Radio(const char *file);
+    
+    // Rule of five - explicitly delete copy operations for RAII resource management
+    Radio(const Radio&) = delete;
+    Radio& operator=(const Radio&) = delete;
+    Radio(Radio&&) = delete;
+    Radio& operator=(Radio&&) = delete;
+    
     void Config(){
         // get device capabilities
-        struct v4l2_capability cap;
-        v4l2_ioctl(fd, VIDIOC_QUERYCAP, &cap);
+        struct v4l2_capability cap{};
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+        if (v4l2_ioctl(fd, VIDIOC_QUERYCAP, &cap) == -1) {
+            std::cerr << "Error querying capabilities: " << strerror(errno) << std::endl;
+        }
 
         // set software radio device to 140Mhz center frequency, and 6Mhz IQ bandwidth
-        struct v4l2_frequency freq;
+        struct v4l2_frequency freq{};
         freq.tuner = 0;
         freq.type = V4L2_TUNER_RADIO;
-        freq.frequency = 140000000;
-        v4l2_ioctl(fd, VIDIOC_S_FREQUENCY, &freq);
+        freq.frequency = DEFAULT_FREQUENCY_HZ;
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+        if (v4l2_ioctl(fd, VIDIOC_S_FREQUENCY, &freq) == -1) {
+            std::cerr << "Error setting frequency: " << strerror(errno) << std::endl;
+        }
 
         // set device to use IQ mode
-        struct v4l2_modulator mod;
+        struct v4l2_modulator mod{};
         mod.index = 0;
         mod.capability = V4L2_TUNER_CAP_LOW;
         mod.rangelow = 0;
         mod.rangehigh = 0;
-        v4l2_ioctl(fd, VIDIOC_S_MODULATOR, &mod);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+        if (v4l2_ioctl(fd, VIDIOC_S_MODULATOR, &mod) == -1) {
+            std::cerr << "Error setting modulator: " << strerror(errno) << std::endl;
+        }
 
         // 6Mhz input rf bandwidth
-        struct v4l2_frequency freq2;
+        struct v4l2_frequency freq2{};
         freq2.tuner = 0;
         freq2.type = V4L2_TUNER_RADIO;
         freq2.frequency = 0;
-        v4l2_ioctl(fd, VIDIOC_S_FREQUENCY, &freq2);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+        if (v4l2_ioctl(fd, VIDIOC_S_FREQUENCY, &freq2) == -1) {
+            std::cerr << "Error setting bandwidth: " << strerror(errno) << std::endl;
+        }
     }
     ~Radio();
     auto read(char *buffer, int buffer_size) -> int;
@@ -85,15 +109,14 @@ int Radio<bufferSize>::read_count(){
     }
 
     template<int bufferSize>
-    Radio<bufferSize>::Radio(const char *file)
+    Radio<bufferSize>::Radio(const char *file) : fd(-1), buffer_count(0), buffer_index(0), buffer_ready(0)
     {
         fd = v4l2_open(file, O_RDWR);
         if(fd < 0){
             std::cout << "Error opening " << file << ": " << strerror(errno) << std::endl;
             //throw std::runtime_error("could not open");
         }
-        buffer_index = 0;
-        buffer_ready = 0;}
+    }
 
     template<int bufferSize>
     int Radio<bufferSize>::read(char *buffer, int buffer_size)
@@ -129,16 +152,18 @@ public:
 int main(){
     Timer t;
     // open /dev/swradio0
-    Radio<4096> radio{"/dev/swradio0"};
+    Radio<BUFFER_SIZE> radio{"/dev/swradio0"};
 
-    int count=0;
+    int count = 0;
 
     // start receiving raw samples in while loop
-    while(count<100000){
+    while(count < MAX_READ_COUNT){
         // read samples
-        char buffer[4096];
-        radio.read(buffer, 4096);
-    count ++;
+        std::array<char, BUFFER_SIZE> buffer{};
+        radio.read(buffer.data(), BUFFER_SIZE);
+        count++;
     }
+    
+    return 0;
 }
 
