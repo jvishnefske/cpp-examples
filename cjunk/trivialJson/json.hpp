@@ -16,10 +16,10 @@ struct Node {
     // reorder to put something sane for trivial construction.
     using Storage = std::variant<SmallString, int64_t, double, ListPtr>;
 
-    template<typename Integer, std::enable_if_t<std::is_integral_v<Integer>, bool> = true>
+    template<typename Integer, std::enable_if_t<std::is_integral_v<Integer> && !std::is_same_v<Integer, bool>, bool> = true>
     constexpr explicit Node(const Integer i): _storage{static_cast<int64_t>(i)} {}
 
-    template<typename T, std::enable_if_t<std::is_convertible_v<T, Storage>, bool> = true>
+    template<typename T, std::enable_if_t<std::is_convertible_v<T, Storage> && !std::is_integral_v<T>, bool> = true>
     constexpr explicit Node(const T obj): _storage(obj) {}
     // only needed for small strings since char* is not convertable to SmallString
 //    template<typename T, std::enable_if_t<std::is_convertible_v<T, std::string>, bool> = true>
@@ -58,6 +58,8 @@ struct Node {
         _storage = d;
     }
 
+    // Commented out broken constructor that used removed generator function
+    /*
     template<typename ...Args>
     explicit Node(Args const &... args){
         static_assert(std::is_trivially_constructible<std::vector<Node>, Args...>::value , "possible to contruct from container");
@@ -66,6 +68,7 @@ struct Node {
         //(  container.push_back(args)  ... );
         _storage.emplace(std::forward<Args...>(args) ...);
     }
+    */
 
     Node() = default;
 
@@ -80,31 +83,15 @@ struct Node {
     auto visit(Visitor v){
         return std::visit(v, _storage);
     }
-    std::string serialize();
+    std::string serialize() const;
 protected:
     Storage _storage;
 
     /**
      * These generate functions were included simply because the MSVC++ gave me compile errors
      * when attempting to add parameter pack expansion to a Node constructor.
-     * @tparam Integer
-     * @param i
-     * @return
+     * Removing unused generator functions to improve coverage.
      */
-
-    template<typename Integer, std::enable_if_t<std::is_integral<Integer>::value, bool> = true>
-    Node generator(Integer i) {
-        Node j;
-        j._storage = static_cast<int64_t>(i);
-        return j;
-    }
-
-    template<typename T, std::enable_if_t<std::is_convertible<T, Node::Storage>::value, bool> = true>
-    Node generator(T thingy) {
-        Node j;
-        j._storage = thingy;
-        return j;
-    }
 };
 
 // how to differentiate serialization methods

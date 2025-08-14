@@ -10,17 +10,16 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: lukka/get-cmake@latest
+    - name: Install system dependencies
+      run: sudo apt-get update && sudo apt-get install -y libfftw3-dev libpoco-dev
     - name: cmake
       run: cmake -B cmake-build -S . -GNinja && cmake --build cmake-build
-    - name: install meson
-      run: python3 -m pip install https://github.com/mesonbuild/meson/releases/download/1.0.0/meson-1.0.0.tar.gz && which meson
-  sonarcloud:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        # Disabling shallow clone is recommended for improving relevancy of reporting
-        fetch-depth: 0
+    - name: Run tests
+      run: ctest --test-dir cmake-build --output-on-failure
+    - name: Generate coverage report
+      run: |
+        python3 -m pip install gcovr
+        gcovr -r cmake-build --xml-pretty -o coverage.xml
     - name: SonarCloud Scan
       uses: sonarsource/sonarcloud-github-action@master
       env:
@@ -28,9 +27,8 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     - name: Run build-wrapper
       run: |
-        cmake -S . -B build
-        which build-wrapper-linux-x86_64 || echo "failed while looking for wrapper command"
-        which ninja || echo "ninja not found"
-        build-wrapper-linux-x86-64 --out-dir cmake-build-sonarcube-wrap cmake --build build || echo "failed to run wrapper command"
+        build-wrapper-linux-x86-64 --out-dir cmake-build-sonarcube-wrap cmake --build cmake-build
     - name: run tox
       run: python3 -m pip install tox && tox -e py
+    - name: install meson
+      run: python3 -m pip install https://github.com/mesonbuild/meson/releases/download/1.0.0/meson-1.0.0.tar.gz && which meson
