@@ -3,3 +3,4 @@ project(cjunk)
 
 
 add_subdirectory(trivialJson)
+add_subdirectory(practice)
