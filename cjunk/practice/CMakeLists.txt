@@ -16,8 +16,8 @@ else()
 endif()
 
 # Find Boost for websocket and async tests
-find_package(Boost REQUIRED COMPONENTS system)
-target_link_libraries(test_all_practice PRIVATE Boost::system)
+#find_package(Boost REQUIRED COMPONENTS system)
+target_link_libraries(test_all_practice PRIVATE Boost::boost)
 
 # Register the test with CTest
 add_test(NAME practice_tests COMMAND test_all_practice)
