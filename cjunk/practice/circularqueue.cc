@@ -1,6 +1,8 @@
 #include <array>
 #include <atomic>
-#include <semaphore>
+#include <mutex>
+#include <condition_variable>
+#include <cstddef>
 
 /**
  * @brief Circular queue implementation.
@@ -12,9 +14,11 @@ template <typename T, size_t N>
 class CircularQueue {
     std::atomic_uint m_head, m_tail;
     std::array<T, N> m_data;
-    std::counting_semaphore<N> m_sem_empty, m_sem_full;
+    std::mutex m_mutex;
+    std::condition_variable m_cv_empty, m_cv_full;
+    std::atomic<size_t> m_count;
 public:
-    CircularQueue() : m_head(0), m_tail(0), m_sem_empty(0), m_sem_full(N) {
+    CircularQueue() : m_head(0), m_tail(0), m_count(0) {
         static_assert(ATOMIC_INT_LOCK_FREE, "our atomic is not lock-free");
     }
     /**
@@ -22,27 +26,32 @@ public:
      * @param item
      */
     bool try_push(T const& item) {
-        if( m_sem_full.try_acquire()){
-            m_data[m_head++ % N] = item;
-            m_sem_empty.release();
-            return true;
+        std::unique_lock<std::mutex> lock(m_mutex, std::try_to_lock);
+        if (!lock.owns_lock() || m_count >= N) {
+            return false;
         }
-        return false;
+        m_data[m_head++ % N] = item;
+        m_count++;
+        m_cv_empty.notify_one();
+        return true;
     }
     /**
      * @brief enqueue an element, or block until the queue is not full.
      * @param item
      */
      void push(T const& item) {
-        m_sem_full.acquire();
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_cv_full.wait(lock, [this] { return m_count < N; });
         m_data[m_head++ % N] = item;
-        m_sem_empty.release();
+        m_count++;
+        m_cv_empty.notify_one();
     }
 
     T pop() {
-        m_sem_empty.acquire();
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_cv_empty.wait(lock, [this] { return m_count > 0; });
         T item = m_data[m_tail++ % N];
-        m_sem_full.release();
+        m_count--;
         // Modulo is not necessary here, but it is a good idea to avoid
         // integer overflow.
         {
@@ -57,11 +66,12 @@ public:
             const auto desired = expected % N;
             m_head.compare_exchange_strong(expected, desired);
         }
-        m_sem_full.post();
+        m_cv_full.notify_one();
         return item;
     }
 };
 void test_queue(){
     CircularQueue<int, 10> myQ{};
-//    myQ.push(1);
+    myQ.push(1); // Use the queue to avoid unused variable warning
+    (void)myQ.pop(); // Suppress unused return value warning
 };

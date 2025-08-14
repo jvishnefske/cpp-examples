@@ -2,35 +2,22 @@ cmake_minimum_required(VERSION 3.13)
 project(radio_demo)
 
 # query pkgconfig for videodev
-
-if(CMAKE_SYSTEM_NAME MATCHES "LINUX")
-    find_package(videodev)
-endif()
-# if videodev found
-if(videodev_FOUND)
-    find_package(v4l2)
-    # if v4l2 found
-    if(v4l2_FOUND)
-        # v4l2 is used for camera
-        add_executable(radio_demo radio.cpp)
-        target_link_libraries(radio_demo PRIVATE v4l2)
-        # c++ 11
-        target_compile_features(radio_demo PRIVATE cxx_std_11)
-    endif()
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(RADIO_LIB2 REQUIRED libv4l2)
+if(NOT RADIO_LIB2_FOUND)
+    message(FATAL_ERROR "missing radio library libv4l2")
 endif()
 
-
-# use the CMake build system to search for the videodev2.h header and link it if found
-# if the header is found, link it
-set(video_include_file "linux/videodev2.h")
 # check if the header exists in /usr/include
-find_library(video_include_file "/usr/include/${video_include_file}")
+find_file(VIDEO_INCLUDE_FILE NAMES videodev2.h HINTS "/usr/include/linux")
 if(VIDEO_INCLUDE_FILE)
-    # if the header is found, link it
+    # Create the executable and link against the v4l2 library
     add_executable(radio_demo radio.cpp)
-
-    add_library(video_include_file SHARED ${video_include_file})
-    target_link_libraries(radio_demo video_include_file)
+    target_link_libraries(radio_demo PRIVATE ${RADIO_LIB2_LIBRARIES})
+    target_include_directories(radio_demo PRIVATE ${RADIO_LIB2_INCLUDE_DIRS})
+    target_compile_options(radio_demo PRIVATE ${RADIO_LIB2_CFLAGS_OTHER})
+    target_compile_features(radio_demo PRIVATE cxx_std_17)
+    add_test(radio_demo radio_demo)
 else()
-    message(INFO "videodev2.h not found, skipping radio_demo")
+    message(FATAL_ERROR "videodev2.h not found, skipping radio_demo")
 endif()

@@ -47,11 +47,11 @@ private:
 
 
 class SerialPortHardware{
+public:
     //open serial port
-    SerialPort(std::string portName){
+    SerialPortHardware(std::string portName){
         //open file handle.
-        
-
+        (void)portName; // suppress unused parameter warning
     }
 
 };

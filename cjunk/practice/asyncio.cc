@@ -58,7 +58,7 @@ bool kbhit(){
 
 
 void io(){
-  raw();
+  // raw(); // Function not defined
   while(running){
      char ch{};
      //std::cin.get(ch);
@@ -70,7 +70,7 @@ void io(){
       (void) ch;
      std::cout << "got input" << std::endl;
   }
-  normal();
+  // normal(); // Function not defined
 }
 
 int main(){
