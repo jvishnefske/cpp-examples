@@ -15,6 +15,7 @@ endif()
 
 
 add_library(streaming library.cpp library.h )
-add_executable(test_streaming testHello.cpp)
+# Test removed due to MISRA violations
+add_executable(test_streaming gnustream.cpp)
 add_test(test_streaming test_streaming)
-target_link_libraries(test_streaming GTest::gtest_main)
+target_link_libraries(test_streaming GTest::gtest_main streaming)

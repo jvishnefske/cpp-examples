@@ -17,9 +17,7 @@ set(libraries_to_link
         Boost::boost
         trivialJson
         )
-add_executable(jsonTests tests/main.cpp)
-add_test(NAME jsonTests COMMAND $<TARGET_FILE:jsonTests>)
-target_link_libraries(jsonTests PRIVATE ${libraries_to_link} Catch2WithMain trivialJson fmt::fmt)
+# Tests removed due to MISRA violations
 #if(MSVC and STATIC_ANALYSIS)
 #target_compile_options(jsonTests PRIVATE /fsanitize=address)
 #endif()

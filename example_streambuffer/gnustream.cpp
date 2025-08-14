@@ -9,7 +9,7 @@
 	/* central output function
 	 * - print characters in uppercase mode
 	 */
-	virtual int_type overflow (int_type c) {
+	int_type overflow (int_type c) override {
 	    if (c != EOF) {
 		// convert lowercase to uppercase
 		c = std::toupper(static_cast<char>(c),getloc());
@@ -30,7 +30,8 @@
 	// initialize output stream with that output buffer
 	std::ostream out(&ob);
 
+	static constexpr int kHexValue = 31;
 	out << "31 hexadecimal: "
-	    << std::hex << 31 << std::endl;
+	    << std::hex << kHexValue << std::endl;
 	return 0;
     }
