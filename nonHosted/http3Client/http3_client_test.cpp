@@ -462,21 +462,21 @@ public:
         auto client = create_http3_client();
         
         // Valid hostnames
-        auto result = client.connect("example.com");
+        auto result = client.connect("example.com"); // Result is used in TEST_ASSERT
         TEST_ASSERT(result == Result::Success || result == Result::ProtocolError);
-        client.disconnect();
+        (void)client.disconnect();
         
-        result = client.connect("sub.domain.example.com");
+        result = client.connect("sub.domain.example.com"); // Result is used in TEST_ASSERT
         TEST_ASSERT(result == Result::Success || result == Result::ProtocolError);
-        client.disconnect();
+        (void)client.disconnect();
         
-        result = client.connect("example-with-dash.com");
+        result = client.connect("example-with-dash.com"); // Result is used in TEST_ASSERT
         TEST_ASSERT(result == Result::Success || result == Result::ProtocolError);
-        client.disconnect();
+        (void)client.disconnect();
         
-        result = client.connect("192.168.1.1");
+        result = client.connect("192.168.1.1"); // Result is used in TEST_ASSERT
         TEST_ASSERT(result == Result::Success || result == Result::ProtocolError);
-        client.disconnect();
+        (void)client.disconnect();
         
         // Invalid hostnames
         result = client.connect("example_with_underscore.com");
