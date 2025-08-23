@@ -60,3 +60,5 @@ public:
     const uint8_t* data() const noexcept { return data_; }
     size_t remaining() const noexcept { return remaining_; }
 };
+
+} // namespace
