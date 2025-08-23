@@ -6,6 +6,8 @@
 #include <cstddef>
 #include <cstring>
 #include <algorithm>
+#include <string> // Required for std::string
+#include <vector> // Required for std::vector in ConsumeBytes
 #include "http3_client.hpp"
 
 // Fuzzer for different components of the HTTP/3 client
