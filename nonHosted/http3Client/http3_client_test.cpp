@@ -79,6 +79,7 @@ public:
         TEST_ASSERT(header.get_value() == "application/json");
         
         // Test buffer overflow protection
+        std::string long_name(65, 'a'); // Declared here
         (void)header.set_header(long_name, "value");
         TEST_ASSERT_EQ(Result::BufferOverflow, result);
         
