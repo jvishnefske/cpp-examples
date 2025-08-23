@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.1)
+project(http3_client)
+set(CMAKE_EXPORT_COMPILE_COMMANDS CACHED true BOOL "")
+add_executable(http3_test http3_client_test.cpp)
+add_test(http3_test http3_test)
+add_executable(http_fuzz http3_fuzzer.cpp)
