@@ -208,7 +208,7 @@ public:
 // QPACK Dynamic Table (simplified implementation)
 class QpackDynamicTable {
 private:
-    std::array<HttpHeader, Config::QPACK_DYNAMIC_TABLE_SIZE> entries_{};
+    std::array<HttpHeader, Config::QPACK_DYNAMIC_TABLE_SIZE> entries_;
     std::size_t size_{0U};
     std::size_t capacity_{Config::QPACK_DYNAMIC_TABLE_SIZE};
 
@@ -696,14 +696,14 @@ private:
         Http3Frame& frame) noexcept {
         
         // Build header list
-        std::array<HttpHeader, Config::MAX_HEADER_COUNT> headers{};
+        std::array<HttpHeader, Config::MAX_HEADER_COUNT> headers;
         std::size_t total_headers = 0U;
         
         // Add pseudo-headers (required for HTTP/3)
-        headers[total_headers++].set_header(":method", method);
-        headers[total_headers++].set_header(":path", path);
-        headers[total_headers++].set_header(":scheme", "https");
-        headers[total_headers++].set_header(":authority", host);
+        (void)headers[total_headers++].set_header(":method", method);
+        (void)headers[total_headers++].set_header(":path", path);
+        (void)headers[total_headers++].set_header(":scheme", "https");
+        (void)headers[total_headers++].set_header(":authority", host);
         
         // Add additional headers
         for (std::size_t i = 0U; i < header_count && total_headers < Config::MAX_HEADER_COUNT; ++i) {
@@ -739,7 +739,7 @@ private:
         switch (frame.type) {
             case FrameType::HEADERS: {
                 // Decode headers using QPACK
-                std::array<HttpHeader, Config::MAX_HEADER_COUNT> headers{};
+                std::array<HttpHeader, Config::MAX_HEADER_COUNT> headers;
                 std::size_t header_count = 0U;
                 
                 auto result = qpack_processor_.decode_headers(
@@ -812,7 +812,7 @@ private:
         
         // Mock QPACK-encoded ":status: 200" header
         std::array<std::uint8_t, 10U> mock_header_data = {0x00, 0x00, 0x87}; // Simplified
-        mock_headers.set_payload(mock_header_data.data(), 3U);
+        (void)mock_headers.set_payload(mock_header_data.data(), 3U);
         
         auto result = process_response_frame(mock_headers);
         if (result != Result::Success) {
@@ -823,7 +823,7 @@ private:
         Http3Frame mock_data{};
         mock_data.type = FrameType::DATA;
         const char* mock_response = "{\"status\":\"success\"}";
-        mock_data.set_payload(reinterpret_cast<const std::uint8_t*>(mock_response), std::strlen(mock_response));
+        (void)mock_data.set_payload(reinterpret_cast<const std::uint8_t*>(mock_response), std::strlen(mock_response));
         
         return process_response_frame(mock_data);
     }
@@ -901,8 +901,8 @@ public:
         std::uint64_t stream_id = stream_manager_.create_request_stream();
         
         // Create additional headers
-        std::array<HttpHeader, 2U> additional_headers{};
-        additional_headers[0].set_header("content-type", "application/json");
+        std::array<HttpHeader, 2U> additional_headers;
+        (void)additional_headers[0].set_header("content-type", "application/json");
         
         // Convert content-length to string
         std::array<char, 10U> length_str{};
@@ -926,7 +926,7 @@ public:
             }
         }
         
-        additional_headers[1].set_header("content-length", std::string_view(length_str.data(), length_digits));
+        (void)additional_headers[1].set_header("content-length", std::string_view(length_str.data(), length_digits));
         
         // Create HEADERS frame
         Http3Frame headers_frame{};
@@ -1044,12 +1044,12 @@ public:
     
     // Step 2: Build JSON payload
     JsonBuilder json;
-    json.start_object();
-    json.add_string_field("sensor_id", "temp_sensor_01", false);
-    json.add_number_field("temperature", 23, false);
-    json.add_string_field("unit", "celsius", false);
-    json.add_string_field("timestamp", "2024-01-15T10:30:00Z", true);
-    json.end_object();
+    (void)json.start_object();
+    (void)json.add_string_field("sensor_id", "temp_sensor_01", false);
+    (void)json.add_number_field("temperature", 23, false);
+    (void)json.add_string_field("unit", "celsius", false);
+    (void)json.add_string_field("timestamp", "2024-01-15T10:30:00Z", true);
+    (void)json.end_object();
     
     // Step 3: Send JSON via proper HTTP/3 POST with QPACK headers
     result = client.post_json("/api/v1/sensors/data", json);
@@ -1069,7 +1069,7 @@ public:
     }
     
     // Step 6: Clean disconnection
-    client.disconnect();
+    (void)client.disconnect();
     
     return Result::Success;
 }

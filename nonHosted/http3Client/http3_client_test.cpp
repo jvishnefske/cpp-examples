@@ -79,16 +79,15 @@ public:
         TEST_ASSERT(header.get_value() == "application/json");
         
         // Test buffer overflow protection
-        std::string long_name(65, 'a');  // Exceeds 64 char limit
-        result = header.set_header(long_name, "value");
+        (void)header.set_header(long_name, "value");
         TEST_ASSERT_EQ(Result::BufferOverflow, result);
         
         std::string long_value(257, 'b');  // Exceeds 256 char limit
-        result = header.set_header("name", long_value);
+        (void)header.set_header("name", long_value);
         TEST_ASSERT_EQ(Result::BufferOverflow, result);
         
         // Test edge cases
-        result = header.set_header("", "");
+        (void)header.set_header("", "");
         TEST_ASSERT_EQ(Result::Success, result);
         TEST_ASSERT(header.get_name().empty());
         TEST_ASSERT(header.get_value().empty());
@@ -96,7 +95,7 @@ public:
         // Test maximum valid lengths
         std::string max_name(63, 'x');
         std::string max_value(255, 'y');
-        result = header.set_header(max_name, max_value);
+        (void)header.set_header(max_name, max_value);
         TEST_ASSERT_EQ(Result::Success, result);
         TEST_ASSERT(header.get_name() == max_name);
         TEST_ASSERT(header.get_value() == max_value);
@@ -122,7 +121,7 @@ public:
             test_data[i] = static_cast<std::uint8_t>(i);
         }
         
-        auto result = frame.set_payload(test_data.data(), test_data.size());
+        auto result = frame.set_payload(test_data.data(), test_data.size()); // Result is used in TEST_ASSERT_EQ
         TEST_ASSERT_EQ(Result::Success, result);
         TEST_ASSERT(frame.payload_length == test_data.size());
         
@@ -132,16 +131,16 @@ public:
         }
         
         // Test null pointer with non-zero length
-        result = frame.set_payload(nullptr, 10U);
+        result = frame.set_payload(nullptr, 10U); // Result is used in TEST_ASSERT_EQ
         TEST_ASSERT_EQ(Result::InvalidParameter, result);
         
         // Test null pointer with zero length (should succeed)
-        result = frame.set_payload(nullptr, 0U);
+        result = frame.set_payload(nullptr, 0U); // Result is used in TEST_ASSERT_EQ
         TEST_ASSERT_EQ(Result::Success, result);
         
         // Test buffer overflow
-        std::array<std::uint8_t, Config::MAX_PACKET_SIZE + 1U> large_data{};
-        result = frame.set_payload(large_data.data(), large_data.size());
+        std::array<std::uint8_t, Config::MAX_PACKET_SIZE + 1U> large_data;
+        result = frame.set_payload(large_data.data(), large_data.size()); // Result is used in TEST_ASSERT_EQ
         TEST_ASSERT_EQ(Result::BufferOverflow, result);
         
         return true;
@@ -206,14 +205,14 @@ public:
         
         // Add entries
         HttpHeader header1;
-        header1.set_header("custom-header", "custom-value");
-        auto result = table.add_entry(header1);
+        (void)header1.set_header("custom-header", "custom-value");
+        auto result = table.add_entry(header1); // Result is used in TEST_ASSERT_EQ
         TEST_ASSERT_EQ(Result::Success, result);
         TEST_ASSERT(table.size() == 1U);
         
         HttpHeader header2;
-        header2.set_header("another-header", "another-value");
-        result = table.add_entry(header2);
+        (void)header2.set_header("another-header", "another-value");
+        result = table.add_entry(header2); // Result is used in TEST_ASSERT_EQ
         TEST_ASSERT_EQ(Result::Success, result);
         TEST_ASSERT(table.size() == 2U);
         
@@ -247,11 +246,11 @@ public:
         QpackProcessor processor;
         
         // Prepare headers to encode
-        std::array<HttpHeader, 4U> headers{};
-        headers[0].set_header(":method", "GET");
-        headers[1].set_header(":path", "/");
-        headers[2].set_header(":scheme", "https");
-        headers[3].set_header(":authority", "example.com");
+        std::array<HttpHeader, 4U> headers;
+        (void)headers[0].set_header(":method", "GET");
+        (void)headers[1].set_header(":path", "/");
+        (void)headers[2].set_header(":scheme", "https");
+        (void)headers[3].set_header(":authority", "example.com");
         
         // Encode headers
         std::array<std::uint8_t, 1024U> encoded{};
@@ -265,7 +264,7 @@ public:
         TEST_ASSERT(encoded_length > 0U);
         
         // Decode headers
-        std::array<HttpHeader, 10U> decoded_headers{};
+        std::array<HttpHeader, 10U> decoded_headers;
         std::size_t decoded_count = 0U;
         
         result = processor.decode_headers(
@@ -275,8 +274,8 @@ public:
         TEST_ASSERT_EQ(Result::Success, result);
         
         // Test with literal headers (not in static table)
-        headers[0].set_header("x-custom", "value1");
-        headers[1].set_header("x-another", "value2");
+        (void)headers[0].set_header("x-custom", "value1");
+        (void)headers[1].set_header("x-another", "value2");
         
         result = processor.encode_headers(
             headers.data(), 2U,
@@ -318,19 +317,19 @@ public:
         JsonBuilder json;
         
         // Build simple JSON object
-        auto result = json.start_object();
+        auto result = json.start_object(); // Result is used in TEST_ASSERT_EQ
         TEST_ASSERT_EQ(Result::Success, result);
         
-        result = json.add_string_field("name", "test", false);
+        result = json.add_string_field("name", "test", false); // Result is used in TEST_ASSERT_EQ
         TEST_ASSERT_EQ(Result::Success, result);
         
-        result = json.add_number_field("value", 42U, false);
+        result = json.add_number_field("value", 42U, false); // Result is used in TEST_ASSERT_EQ
         TEST_ASSERT_EQ(Result::Success, result);
         
-        result = json.add_string_field("status", "ok", true);
+        result = json.add_string_field("status", "ok", true); // Result is used in TEST_ASSERT_EQ
         TEST_ASSERT_EQ(Result::Success, result);
         
-        result = json.end_object();
+        result = json.end_object(); // Result is used in TEST_ASSERT_EQ
         TEST_ASSERT_EQ(Result::Success, result);
         
         auto json_str = json.get_json();
@@ -344,32 +343,32 @@ public:
         
         // Test escaping
         json.reset();
-        json.start_object();
-        json.add_string_field("quote", "\"hello\"", true);
-        json.end_object();
+        (void)json.start_object();
+        (void)json.add_string_field("quote", "\"hello\"", true);
+        (void)json.end_object();
         
         json_str = json.get_json();
         TEST_ASSERT(json_str.find("\\\"hello\\\"") != std::string_view::npos);
         
         // Test buffer overflow
         json.reset();
-        json.start_object();
+        (void)json.start_object();
         
         // Try to add a very long string that exceeds buffer
         std::string long_key(Config::MAX_JSON_SIZE / 2, 'a');
         std::string long_value(Config::MAX_JSON_SIZE / 2, 'b');
         
-        result = json.add_string_field(long_key, long_value, true);
+        result = json.add_string_field(long_key, long_value, true); // Result is used in TEST_ASSERT_EQ
         TEST_ASSERT_EQ(Result::BufferOverflow, result);
         TEST_ASSERT(json.has_error());
         TEST_ASSERT(json.get_json().empty());
         
         // Test number edge cases
         json.reset();
-        json.start_object();
-        json.add_number_field("zero", 0U, false);
-        json.add_number_field("max", UINT64_MAX, true);
-        json.end_object();
+        (void)json.start_object();
+        (void)json.add_number_field("zero", 0U, false);
+        (void)json.add_number_field("max", UINT64_MAX, true);
+        (void)json.end_object();
         
         json_str = json.get_json();
         TEST_ASSERT(json_str.find("\"zero\":0") != std::string_view::npos);
@@ -552,7 +551,7 @@ public:
         JsonBuilder json;
         
         // Build complex nested-like structure
-        json.start_object();
+        (void)json.start_object();
         
         // Add many fields to test buffer management
         constexpr std::size_t num_fields = 50U;
@@ -597,7 +596,7 @@ public:
         TEST_ASSERT(encoded_length == 2U);  // Just the required fields
         
         // Test decoding empty header list
-        std::array<HttpHeader, 10U> headers{};
+        std::array<HttpHeader, 10U> headers;
         std::size_t header_count = 0U;
         
         result = processor.decode_headers(
@@ -611,7 +610,7 @@ public:
         HttpHeader long_header;
         std::string max_name(63, 'n');
         std::string max_value(255, 'v');
-        long_header.set_header(max_name, max_value);
+        (void)long_header.set_header(max_name, max_value);
         
         result = processor.encode_headers(
             &long_header, 1U,
