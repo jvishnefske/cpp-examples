@@ -80,11 +80,11 @@ public:
         
         // Test buffer overflow protection
         std::string long_name(65, 'a'); // Declared here
-        (void)header.set_header(long_name, "value");
+        result = header.set_header(long_name, "value"); // Assign the return value to result
         TEST_ASSERT_EQ(Result::BufferOverflow, result);
         
         std::string long_value(257, 'b');  // Exceeds 256 char limit
-        (void)header.set_header("name", long_value);
+        result = header.set_header("name", long_value); // Assign the return value to result
         TEST_ASSERT_EQ(Result::BufferOverflow, result);
         
         // Test edge cases
@@ -589,8 +589,10 @@ public:
         std::array<std::uint8_t, 1024U> encoded{};
         std::size_t encoded_length = 0U;
         
+        // Use a dummy header array for 0 header_count to avoid nullptr check
+        std::array<HttpHeader, 1> dummy_headers;
         auto result = processor.encode_headers(
-            nullptr, 0U,
+            dummy_headers.data(), 0U, // Pass a valid pointer, but 0 count
             encoded.data(), encoded.size(), encoded_length
         );
         TEST_ASSERT_EQ(Result::Success, result);
