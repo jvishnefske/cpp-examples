@@ -178,7 +178,7 @@ private:
 
 public:
     [[nodiscard]] constexpr std::optional<std::size_t> find_entry(
-        std::string_view name, std::string_view value = {}) const noexcept {
+        std::string_view name, std::string_view value = std::string_view{}) const noexcept {
         
         for (std::size_t i = 0U; i < static_table_.size(); ++i) {
             if (name == static_table_[i].name) {
