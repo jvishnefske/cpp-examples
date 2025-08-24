@@ -88,7 +88,7 @@ public:
         TEST_ASSERT_EQ(Result::BufferOverflow, result);
         
         // Test edge cases
-        (void)header.set_header("", "");
+        result = header.set_header("", "");
         TEST_ASSERT_EQ(Result::Success, result);
         TEST_ASSERT(header.get_name().empty());
         TEST_ASSERT(header.get_value().empty());
@@ -96,7 +96,7 @@ public:
         // Test maximum valid lengths
         std::string max_name(63, 'x');
         std::string max_value(255, 'y');
-        (void)header.set_header(max_name, max_value);
+        result = header.set_header(max_name, max_value);
         TEST_ASSERT_EQ(Result::Success, result);
         TEST_ASSERT(header.get_name() == max_name);
         TEST_ASSERT(header.get_value() == max_value);
