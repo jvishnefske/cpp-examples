@@ -122,7 +122,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         std::string header_name = provider.ConsumeString(63);
         std::string header_value = provider.ConsumeString(255);
         if (header_count < fuzz_headers.size() &&
-            qpack_processor.dynamic_table_.add_entry(HttpHeader{}) == Result::Success) { // Add to dynamic table for fuzzing
+            qpack_processor.add_dynamic_entry(HttpHeader{}) == Result::Success) { // Add to dynamic table for fuzzing
             (void)fuzz_headers[header_count++].set_header(std::string_view(header_name), std::string_view(header_value));
         }
     }

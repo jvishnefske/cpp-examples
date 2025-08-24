@@ -250,6 +250,11 @@ private:
 public:
     explicit constexpr QpackProcessor() noexcept = default;
     
+    // Public method to add an entry to the dynamic table for fuzzing/testing
+    [[nodiscard]] constexpr Result add_dynamic_entry(const HttpHeader& header) noexcept {
+        return dynamic_table_.add_entry(header);
+    }
+
     // Simplified QPACK encoding (basic implementation)
     [[nodiscard]] constexpr Result encode_headers(
         const HttpHeader* headers, std::size_t header_count,
