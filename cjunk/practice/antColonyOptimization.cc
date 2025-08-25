@@ -181,3 +181,6 @@ private:
     const std::vector<std::vector<double>>& coordinates;
 };
 
+int main() {
+    return test_aco2();
+}

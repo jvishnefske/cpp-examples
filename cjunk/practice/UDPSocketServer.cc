@@ -97,3 +97,9 @@ void test_udp_client() {
         std::cerr << "Error: " << e.what() << std::endl;
     }
 }
+
+int main() {
+    test_udp_server();
+    test_udp_client();
+    return 0;
+}

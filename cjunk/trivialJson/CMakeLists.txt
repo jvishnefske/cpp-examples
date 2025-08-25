@@ -54,3 +54,6 @@ if(PkgConfig_FOUND)
 else()
     message(STATUS "PkgConfig not available, skipping fromsimd executable")
 endif()
+
+# Add experimental subdirectory for benchmarks and additional tests
+add_subdirectory(experimental)

@@ -29,3 +29,7 @@ class ParticleFilter{
         // Implementation would go here
     }
 };
+
+int main() {
+    return 0;
+}

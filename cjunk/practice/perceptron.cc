@@ -97,3 +97,7 @@ class Network{
     }
 }
 
+int main() {
+    return 0;
+}
+

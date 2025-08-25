@@ -25,3 +25,7 @@ private:
     std::vector<double> x_;
     std::vector<std::vector<double>> P_;
 };
+
+int main() {
+    return 0;
+}

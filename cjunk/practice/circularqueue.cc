@@ -75,3 +75,8 @@ void test_queue(){
     myQ.push(1); // Use the queue to avoid unused variable warning
     (void)myQ.pop(); // Suppress unused return value warning
 };
+
+int main() {
+    test_queue();
+    return 0;
+}

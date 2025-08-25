@@ -38,8 +38,10 @@ include(cmake/dependencies.cmake)
 declare_dependencies()
 FetchContent_MakeAvailable(Boost Catch2 fmt GoogleTest)
 # boost 1.81 has a warning on gcc 13
-target_compile_options(test_main PRIVATE -Wno-dangling-reference)
-target_compile_options(json PRIVATE -Wno-dangling-reference)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "13")
+    target_compile_options(test_main PRIVATE -Wno-dangling-reference)
+    target_compile_options(json PRIVATE -Wno-dangling-reference)
+endif()
 enable_testing()
 #include(cmake/pmm.cmake)
 
@@ -94,5 +96,5 @@ target_link_libraries(raii PRIVATE Catch2::Catch2WithMain)
 add_subdirectory(cjunk)
 add_subdirectory(example_streambuffer)
 add_subdirectory(middleware)
-
+add_subdirectory(nonHosted/http3Client)
 

@@ -39,7 +39,7 @@
 template<class Impl>
 class I2cInterface: Impl{
 public:
-    void read(uint8_t addr){
+    void read(uint8_t addr [[maybe_unused]]){
 
     }
 };

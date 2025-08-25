@@ -57,3 +57,23 @@ class http_client
     }
 
 };
+
+#ifdef STANDALONE_TEST
+#include <iostream>
+
+int main() {
+    std::cout << "Testing parser components..." << std::endl;
+    
+    // Test JSON parsing
+    try {
+        std::string test_json = "{\"key\": \"value\", \"number\": 42}";
+        Json::Value result = parse_json(test_json);
+        std::cout << "JSON parsing test passed" << std::endl;
+    } catch (const std::exception& e) {
+        std::cout << "JSON parsing test failed: " << e.what() << std::endl;
+    }
+    
+    std::cout << "Parser test completed" << std::endl;
+    return 0;
+}
+#endif

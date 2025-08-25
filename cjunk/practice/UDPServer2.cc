@@ -130,3 +130,9 @@ void test_socket_thread(){
     SocketThread st(&s);
     s.send("hello");
 }
+
+int main() {
+    test_socket();
+    test_socket_thread();
+    return 0;
+}

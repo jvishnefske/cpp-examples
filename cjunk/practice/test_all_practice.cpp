@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <string_view>
 #include <cstring>
+#include <cstdint>
 
 #ifdef __unix__
     #define HAS_POSIX_TERMINAL
@@ -41,7 +42,7 @@ TEST_CASE("AsyncIO Terminal Operations", "[asyncio]") {
 
 class MockSession {
 public:
-    MockSession(boost::asio::ip::tcp::socket socket) : socket_(std::move(socket)) {}
+    explicit MockSession(boost::asio::ip::tcp::socket socket) : socket_(std::move(socket)) {}
     void start() { 
         // Mock implementation
     }
@@ -72,15 +73,16 @@ constexpr int EGL_FALSE = 0;
 constexpr int EGL_TRUE = 1;
 constexpr EGLDisplay EGL_DEFAULT_DISPLAY = nullptr;
 
-EGLDisplay mock_eglGetDisplay(EGLDisplay) {
-    return reinterpret_cast<EGLDisplay>(0x12345);
+EGLDisplay mock_eglGetDisplay(EGLDisplay /*unused*/) {
+    constexpr uintptr_t MOCK_DISPLAY_VALUE = 0x12345;
+    return reinterpret_cast<EGLDisplay>(MOCK_DISPLAY_VALUE); // NOLINT
 }
 
-int mock_eglInitialize(EGLDisplay, EGLint*, EGLint*) {
+int mock_eglInitialize(EGLDisplay /*display*/, EGLint* /*major*/, EGLint* /*minor*/) {
     return EGL_TRUE;
 }
 
-void mock_eglTerminate(EGLDisplay) {
+void mock_eglTerminate(EGLDisplay /*display*/) {
     // Mock termination
 }
 
@@ -144,7 +146,7 @@ TEST_CASE("EGL RAII Wrapper", "[egl]") {
 class Solution {
 public:
     int maxProfit(std::vector<int>& prices) {
-        int n = prices.size();
+        auto n = static_cast<int>(prices.size());
         if (n == 0) {
             return 0;
         }
@@ -165,7 +167,13 @@ TEST_CASE("Financial Analysis - Stock Profit", "[financial]") {
     Solution s;
     
     SECTION("Basic stock profit calculation") {
-        std::vector<int> prices = {7, 1, 5, 3, 6, 4};
+        constexpr int PRICE_1 = 7;
+        constexpr int PRICE_2 = 1;
+        constexpr int PRICE_3 = 5;
+        constexpr int PRICE_4 = 3;
+        constexpr int PRICE_5 = 6;
+        constexpr int PRICE_6 = 4;
+        std::vector<int> prices = {PRICE_1, PRICE_2, PRICE_3, PRICE_4, PRICE_5, PRICE_6};
         REQUIRE(s.maxProfit(prices) == 5);
     }
     
@@ -175,7 +183,8 @@ TEST_CASE("Financial Analysis - Stock Profit", "[financial]") {
     }
     
     SECTION("Single price") {
-        std::vector<int> prices = {5};
+        constexpr int SINGLE_PRICE = 5;
+        std::vector<int> prices = {SINGLE_PRICE};
         REQUIRE(s.maxProfit(prices) == 0);
     }
 }
@@ -194,7 +203,7 @@ public:
     }
     
     constexpr const T& operator[](size_t index) const {
-        return data_[index];
+        return data_.at(index);
     }
     
     constexpr size_t size() const { return N; }
@@ -204,7 +213,7 @@ public:
     
     template<typename F>
     auto map(F func) const -> ImmutableArray<decltype(func(data_[0])), N> {
-        ImmutableArray<decltype(func(data_[0])), N> result;
+        ImmutableArray<decltype(func(data_.at(0))), N> result{};
         std::transform(begin(), end(), result.data_.begin(), func);
         return result;
     }
@@ -217,7 +226,9 @@ public:
 
 TEST_CASE("Functional Programming - ImmutableArray", "[functional]") {
     SECTION("Basic array operations") {
-        ImmutableArray<int, 5> numbers{1, 2, 3, 4, 5};
+        constexpr size_t ARRAY_SIZE = 5;
+        constexpr int NUM_5 = 5;
+        ImmutableArray<int, ARRAY_SIZE> numbers{1, 2, 3, 4, NUM_5};
         REQUIRE(numbers.size() == 5);
         REQUIRE(numbers[0] == 1);
         REQUIRE(numbers[4] == 5);
@@ -244,11 +255,15 @@ TEST_CASE("Functional Programming - ImmutableArray", "[functional]") {
 #include <opencv2/ml.hpp>
 
 class MockImageProcessor {
+private:
+    static constexpr int DEFAULT_IMAGE_SIZE = 28;
+    
 public:
-    static cv::Mat generateSyntheticImage(int digit, int size = 28) {
+    static cv::Mat generateSyntheticImage(int digit, int size = DEFAULT_IMAGE_SIZE) {
         cv::Mat image = cv::Mat::zeros(size, size, CV_32F);
         
-        switch (digit % 10) {
+        constexpr int DIGIT_COUNT = 10;
+        switch (digit % DIGIT_COUNT) {
             case 0:
                 cv::circle(image, cv::Point(size/2, size/2), size/3, cv::Scalar(1.0), -1);
                 cv::circle(image, cv::Point(size/2, size/2), size/4, cv::Scalar(0.0), -1);
@@ -268,8 +283,9 @@ public:
 
 TEST_CASE("Image Neural Network - OpenCV", "[neural][opencv]") {
     SECTION("Can generate synthetic images") {
-        cv::Mat image0 = MockImageProcessor::generateSyntheticImage(0, 28);
-        cv::Mat image1 = MockImageProcessor::generateSyntheticImage(1, 28);
+        constexpr int IMAGE_SIZE = 28;
+        cv::Mat image0 = MockImageProcessor::generateSyntheticImage(0, IMAGE_SIZE);
+        cv::Mat image1 = MockImageProcessor::generateSyntheticImage(1, IMAGE_SIZE);
         
         REQUIRE(image0.rows == 28);
         REQUIRE(image0.cols == 28);
@@ -283,14 +299,14 @@ TEST_CASE("Image Neural Network - OpenCV", "[neural][opencv]") {
 // Network Frame Stream Test - simplified from networkframeStream.cpp
 class MockNetworkStream {
 public:
-    MockNetworkStream(const std::string& url) : url_(url), connected_(true) {}
+    explicit MockNetworkStream(const std::string& url) : url_(url), connected_(true) {}
     bool isConnected() const { return connected_; }
     void disconnect() { connected_ = false; }
     const std::string& getUrl() const { return url_; }
 
 private:
     std::string url_;
-    bool connected_;
+    bool connected_ = true;
 };
 
 TEST_CASE("Network Frame Stream", "[network]") {
