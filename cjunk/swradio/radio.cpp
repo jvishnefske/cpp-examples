@@ -1,169 +1,181 @@
-// here is the Radio class using RAII with std::array<4096> buffer instead of malloc
+#include "radio.hpp"
 #include <iostream>
 #include <cstring>
-#include <chrono>
+#include <stdexcept>
 #include <array>
 
 #include <fcntl.h>
 #include <cerrno>
+#include <unistd.h>
 #include <sys/ioctl.h>
 #include <linux/videodev2.h>
 #include <libv4l2.h>
 
-namespace{
-// Constants to avoid magic numbers
-constexpr unsigned int DEFAULT_FREQUENCY_HZ = 140000000U;
-constexpr int MAX_READ_COUNT = 100000;
-constexpr int BUFFER_SIZE = 4096;
+namespace swradio {
 
-template<int bufferSize>
-class Radio {
-private:
-    int fd;
-    //int buffer_size;
-    int buffer_count;
-    int buffer_index;
-    //std::array<char, 4096> buffer;
-    int buffer_ready;
+// Timer implementation
+Timer::Timer() : start_time(Clock::now()) {}
+
+Timer::~Timer() {
+    std::cout << "Timer elapsed: " << elapsed() << " seconds" << std::endl;
+}
+
+double Timer::elapsed() const {
+    auto end_time = Clock::now();
+    return std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
+}
+
+// SoftwareRadio PIMPL implementation
+template<size_t BufferSize>
+class SoftwareRadio<BufferSize>::Impl {
 public:
-    explicit Radio(const char *file);
+    int fd;
+    bool ready;
+    double frequency_mhz;
+    double bandwidth_mhz;
+    std::string device_path;
     
-    // Rule of five - explicitly delete copy operations for RAII resource management
-    Radio(const Radio&) = delete;
-    Radio& operator=(const Radio&) = delete;
-    Radio(Radio&&) = delete;
-    Radio& operator=(Radio&&) = delete;
+    explicit Impl(const std::string& path) 
+        : fd(-1), ready(false), frequency_mhz(0.0), bandwidth_mhz(0.0), device_path(path) {
+        fd = v4l2_open(path.c_str(), O_RDWR);
+        if (fd < 0) {
+            throw std::runtime_error("Failed to open device " + path + ": " + strerror(errno));
+        }
+    }
     
-    void Config(){
-        // get device capabilities
+    ~Impl() {
+        if (fd >= 0) {
+            v4l2_close(fd);
+        }
+    }
+    
+    bool configure_device(double freq_mhz, double bw_mhz) {
+        if (fd < 0) {
+            return false;
+        }
+        
+        // Get device capabilities
         struct v4l2_capability cap{};
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
         if (v4l2_ioctl(fd, VIDIOC_QUERYCAP, &cap) == -1) {
             std::cerr << "Error querying capabilities: " << strerror(errno) << std::endl;
+            return false;
         }
-
-        // set software radio device to 140Mhz center frequency, and 6Mhz IQ bandwidth
+        
+        // Set frequency
         struct v4l2_frequency freq{};
         freq.tuner = 0;
         freq.type = V4L2_TUNER_RADIO;
-        freq.frequency = DEFAULT_FREQUENCY_HZ;
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+        freq.frequency = static_cast<unsigned int>(freq_mhz * 1000000);
+        
         if (v4l2_ioctl(fd, VIDIOC_S_FREQUENCY, &freq) == -1) {
             std::cerr << "Error setting frequency: " << strerror(errno) << std::endl;
+            return false;
         }
-
-        // set device to use IQ mode
+        
+        // Set IQ mode modulator
         struct v4l2_modulator mod{};
         mod.index = 0;
         mod.capability = V4L2_TUNER_CAP_LOW;
         mod.rangelow = 0;
         mod.rangehigh = 0;
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+        
         if (v4l2_ioctl(fd, VIDIOC_S_MODULATOR, &mod) == -1) {
             std::cerr << "Error setting modulator: " << strerror(errno) << std::endl;
+            return false;
         }
-
-        // 6Mhz input rf bandwidth
-        struct v4l2_frequency freq2{};
-        freq2.tuner = 0;
-        freq2.type = V4L2_TUNER_RADIO;
-        freq2.frequency = 0;
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
-        if (v4l2_ioctl(fd, VIDIOC_S_FREQUENCY, &freq2) == -1) {
-            std::cerr << "Error setting bandwidth: " << strerror(errno) << std::endl;
-        }
-    }
-    ~Radio();
-    auto read(char *buffer, int buffer_size) -> int;
-    auto read_ready() -> int;
-    auto read_index() -> int;
-    auto read_count() -> int;
-
-    //int read(char *buffer, int buffer_size);
-};
-
-
-
-
-
-    template<int bufferSize>
-
-int Radio<bufferSize>::read_ready(){
-    return buffer_ready;
-}
-    template<int bufferSize>
-
-int Radio<bufferSize>::read_index(){
-    return buffer_index;
-}
-    template<int bufferSize>
-
-int Radio<bufferSize>::read_count(){
-    return buffer_count;
-}
-
-    template<int bufferSize>
-    Radio<bufferSize>::~Radio()
-    {
-        v4l2_close(fd);
-    }
-
-    template<int bufferSize>
-    Radio<bufferSize>::Radio(const char *file) : fd(-1), buffer_count(0), buffer_index(0), buffer_ready(0)
-    {
-        fd = v4l2_open(file, O_RDWR);
-        if(fd < 0){
-            std::cout << "Error opening " << file << ": " << strerror(errno) << std::endl;
-            //throw std::runtime_error("could not open");
-        }
-    }
-
-    template<int bufferSize>
-    int Radio<bufferSize>::read(char *buffer, int buffer_size)
-    {
-        if(buffer_ready == 0){
-            return 0;
-        }
-        memcpy(buffer, buffer + buffer_index * buffer_size, buffer_size);
-        buffer_index = (buffer_index + 1) % buffer_count;
-        buffer_ready--;
-        return buffer_size;
-    }
-
-// use raii to calculate the time of a code block
-class Timer{
-    using Clock = std::chrono::high_resolution_clock;
-    Clock::time_point start;
-public:
-    Timer(): start(Clock::now()){}
-    double elapsed(){
-        Clock::time_point end = Clock::now();
-        return std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count();
-    }
-    ~Timer(){
-        std::cout << "elapsed time: " << elapsed() << std::endl;
+        
+        frequency_mhz = freq_mhz;
+        bandwidth_mhz = bw_mhz;
+        ready = true;
+        
+        return true;
     }
     
+    int read_device_samples(std::vector<char>& buffer, size_t max_bytes) {
+        if (fd < 0 || !ready) {
+            return -1;
+        }
+        
+        buffer.resize(std::min(max_bytes, BufferSize));
+        
+        ssize_t bytes_read = v4l2_read(fd, buffer.data(), buffer.size());
+        if (bytes_read < 0) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                return 0; // No data available
+            }
+            return -1; // Error
+        }
+        
+        buffer.resize(bytes_read);
+        return static_cast<int>(bytes_read);
+    }
 };
 
-} // namespace
+// SoftwareRadio template implementation
+template<size_t BufferSize>
+SoftwareRadio<BufferSize>::SoftwareRadio(const std::string& device_path)
+    : pimpl(std::make_unique<Impl>(device_path)) {}
 
-// main function
-int main(){
-    Timer t;
-    // open /dev/swradio0
-    Radio<BUFFER_SIZE> radio{"/dev/swradio0"};
+template<size_t BufferSize>
+SoftwareRadio<BufferSize>::~SoftwareRadio() = default;
 
-    int count = 0;
+template<size_t BufferSize>
+SoftwareRadio<BufferSize>::SoftwareRadio(SoftwareRadio&& other) noexcept
+    : pimpl(std::move(other.pimpl)) {}
 
-    // start receiving raw samples in while loop
-    while(count < MAX_READ_COUNT){
-        // read samples
-        std::array<char, BUFFER_SIZE> buffer{};
-        radio.read(buffer.data(), BUFFER_SIZE);
-        count++;
+template<size_t BufferSize>
+SoftwareRadio<BufferSize>& SoftwareRadio<BufferSize>::operator=(SoftwareRadio&& other) noexcept {
+    if (this != &other) {
+        pimpl = std::move(other.pimpl);
     }
-    
-    return 0;
+    return *this;
 }
 
+template<size_t BufferSize>
+bool SoftwareRadio<BufferSize>::configure(double frequency_mhz, double bandwidth_mhz) {
+    return pimpl ? pimpl->configure_device(frequency_mhz, bandwidth_mhz) : false;
+}
+
+template<size_t BufferSize>
+int SoftwareRadio<BufferSize>::read_samples(std::vector<char>& buffer, size_t max_bytes) {
+    return pimpl ? pimpl->read_device_samples(buffer, max_bytes) : -1;
+}
+
+template<size_t BufferSize>
+bool SoftwareRadio<BufferSize>::is_ready() const {
+    return pimpl ? pimpl->ready : false;
+}
+
+template<size_t BufferSize>
+std::string SoftwareRadio<BufferSize>::get_device_info() const {
+    if (!pimpl) {
+        return "Invalid device";
+    }
+    
+    return "SoftwareRadio Device: " + pimpl->device_path + 
+           ", Frequency: " + std::to_string(pimpl->frequency_mhz) + " MHz" +
+           ", Bandwidth: " + std::to_string(pimpl->bandwidth_mhz) + " MHz" +
+           ", Buffer Size: " + std::to_string(BufferSize) + " bytes";
+}
+
+// Factory function implementation
+std::unique_ptr<IRadioDevice> create_radio_device(const std::string& device_path) {
+    try {
+        return std::make_unique<SoftwareRadio<config::DEFAULT_BUFFER_SIZE>>(device_path);
+    } catch (const std::exception& e) {
+        // For testing with fallback devices like /dev/null, create a mock that always succeeds
+        if (device_path == "/dev/null") {
+            auto device = std::make_unique<SoftwareRadio<config::DEFAULT_BUFFER_SIZE>>(device_path);
+            // Note: This will still throw for /dev/null, but that's expected behavior
+            // The main.cpp handles this gracefully
+        }
+        throw; // Re-throw the original exception
+    }
+}
+
+// Explicit template instantiation for common buffer sizes
+template class SoftwareRadio<config::DEFAULT_BUFFER_SIZE>;
+template class SoftwareRadio<1024>;
+template class SoftwareRadio<8192>;
+
+} // namespace swradio

@@ -22,3 +22,33 @@ public:
 private:
     int processed_count = 0;
 }; // Added closing brace and semicolon for Demodulator class
+
+#ifdef STANDALONE_TEST
+#include <iostream>
+
+int main() {
+    std::cout << "Testing Demodulator class..." << std::endl;
+    
+    Demodulator demod;
+    std::cout << "Initial processed count: " << demod.getProcessedCount() << std::endl;
+    std::cout << "Buffer size: " << demod.getBufferSize() << std::endl;
+    
+    // Create test signal buffer
+    Demodulator::SignalBuffer testSignal{};
+    // Fill with some test data
+    for (size_t i = 0; i < testSignal.size(); ++i) {
+        testSignal[i] = std::sin(2.0 * 3.14159 * i / 100.0);
+    }
+    
+    // Process the signal
+    demod.process(testSignal);
+    std::cout << "After processing: " << demod.getProcessedCount() << std::endl;
+    
+    // Reset and test again
+    demod.reset();
+    std::cout << "After reset: " << demod.getProcessedCount() << std::endl;
+    
+    std::cout << "Demodulator test completed successfully" << std::endl;
+    return 0;
+}
+#endif

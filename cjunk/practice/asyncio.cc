@@ -8,6 +8,7 @@
 #include <future>
 #include <chrono>
 #include <atomic>
+#include <thread>
 #include <unistd.h>
 #include <fcntl.h>
 std::atomic_bool running{true};
@@ -60,15 +61,14 @@ bool kbhit(){
 void io(){
   // raw(); // Function not defined
   while(running){
-     char ch{};
-     //std::cin.get(ch);
-      //read(0,&ch,1);
-      //ch = getchar();
-     //try to read char unbuffered since the other two options wait for return on linux
-      getch();
-
-      (void) ch;
-     std::cout << "got input" << std::endl;
+     // Use kbhit() to check if input is available before reading
+     if(kbhit()) {
+        char ch = getch();
+        (void) ch;
+        std::cout << "got input" << std::endl;
+     }
+     // Small delay to prevent busy loop and allow running flag to be checked
+     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
   // normal(); // Function not defined
 }

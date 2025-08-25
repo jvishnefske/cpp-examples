@@ -1,4 +1,4 @@
-.PHONY: all build test coverage clean help configure lint ci tox
+.PHONY: all build test coverage coverage-check clean help configure lint ci tox
 
 BUILD_DIR = build
 
@@ -8,7 +8,7 @@ all: build test coverage
 # Configure cmake
 configure:
 	@echo "=== Configuring project ==="
-	@cmake -B $(BUILD_DIR) -S . -G Ninja
+	@cmake -B $(BUILD_DIR) -S . -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang
 
 # Build the project
 build:
@@ -24,10 +24,15 @@ test: build
 # Generate coverage report
 coverage: test
 	@echo "=== Generating coverage report ==="
-	@gcovr --fail-under-line 10 --exclude $(BUILD_DIR)/_deps $(BUILD_DIR)
+	@gcovr --gcov-executable "llvm-cov gcov" --gcov-ignore-errors=no_working_dir_found --fail-under-line 10 --exclude ".*_deps.*" --exclude ".*catch2.*" --root . $(BUILD_DIR)/nonHosted $(BUILD_DIR)/cjunk $(BUILD_DIR)/example_streambuffer $(BUILD_DIR)/middleware $(BUILD_DIR)/CMakeFiles/raii.dir
+
+# Check coverage completeness (files in git vs coverage report)
+coverage-check: 
+	@echo "=== Checking coverage completeness ==="
+	@./check_coverage_completeness.py
 
 # Run static analysis
-lint: build
+lint: configure
 	@echo "=== Running static analysis ==="
 	@files=$$(find middleware cjunk -name "*.cpp" -o -name "*.cc" 2>/dev/null); \
 	if [ -n "$$files" ]; then \
@@ -63,6 +68,7 @@ help:
 	@echo "  build      - Build the project"
 	@echo "  test       - Run tests"
 	@echo "  coverage   - Generate coverage report"
+	@echo "  coverage-check - Check which git files are missing from coverage"
 	@echo "  lint       - Run static analysis"
 	@echo "  tox        - Run Python tests via tox"
 	@echo "  ci         - Full CI pipeline (build + test + coverage + lint + tox)"

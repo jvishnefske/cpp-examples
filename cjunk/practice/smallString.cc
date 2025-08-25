@@ -75,6 +75,10 @@ public:
         return *this;
     }
     
+    constexpr SmallString& append(const SmallString& other) {
+        return append(std::string_view(other.c_str(), other.size()));
+    }
+    
     // Comparison operators
     constexpr bool operator==(const SmallString& other) const {
         if (size_ != other.size_) {
