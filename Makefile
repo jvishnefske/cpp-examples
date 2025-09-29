@@ -1,4 +1,4 @@
-.PHONY: all build test coverage coverage-check clean help configure lint ci tox
+.PHONY: all build test coverage coverage-check clean help configure lint ci tox perf perf-record perf-report perf-stat perf-mem
 
 BUILD_DIR = build
 
@@ -46,6 +46,65 @@ tox:
 	@echo "=== Running Python tests via tox ==="
 	@tox -e py39
 
+# Performance profiling targets
+# Run performance analysis on tests
+perf: build
+	@echo "=== Running performance analysis ==="
+	@echo "Recording performance data..."
+	@perf record --call-graph=dwarf -o perf.data -- ctest --test-dir $(BUILD_DIR) --output-on-failure
+	@echo "Generating performance report..."
+	@perf report -i perf.data --stdio > perf-report.txt
+	@echo "Performance report saved to perf-report.txt"
+	@echo "Raw data available in perf.data"
+
+# Record performance data only
+perf-record: build
+	@echo "=== Recording performance data ==="
+	@if [ -n "$(TARGET)" ]; then \
+		echo "Recording performance for target: $(TARGET)"; \
+		perf record --call-graph=dwarf -o perf.data -- $(BUILD_DIR)/$(TARGET); \
+	else \
+		echo "Recording performance for all tests"; \
+		perf record --call-graph=dwarf -o perf.data -- ctest --test-dir $(BUILD_DIR) --output-on-failure; \
+	fi
+	@echo "Performance data recorded to perf.data"
+
+# Generate performance report from existing perf.data
+perf-report:
+	@echo "=== Generating performance report ==="
+	@if [ -f perf.data ]; then \
+		perf report -i perf.data --stdio > perf-report.txt; \
+		echo "Performance report saved to perf-report.txt"; \
+		echo "For interactive report, run: perf report -i perf.data"; \
+	else \
+		echo "No perf.data file found. Run 'make perf-record' first."; \
+	fi
+
+# Get performance statistics
+perf-stat: build
+	@echo "=== Running performance statistics ==="
+	@if [ -n "$(TARGET)" ]; then \
+		echo "Performance stats for target: $(TARGET)"; \
+		perf stat -d -d -d $(BUILD_DIR)/$(TARGET); \
+	else \
+		echo "Performance stats for all tests"; \
+		perf stat -d -d -d -- ctest --test-dir $(BUILD_DIR) --output-on-failure; \
+	fi
+
+# Memory profiling with perf
+perf-mem: build
+	@echo "=== Running memory profiling ==="
+	@if [ -n "$(TARGET)" ]; then \
+		echo "Memory profiling for target: $(TARGET)"; \
+		perf mem record -o perf-mem.data -- $(BUILD_DIR)/$(TARGET); \
+		perf mem report -i perf-mem.data --stdio > perf-mem-report.txt; \
+	else \
+		echo "Memory profiling for all tests"; \
+		perf mem record -o perf-mem.data -- ctest --test-dir $(BUILD_DIR) --output-on-failure; \
+		perf mem report -i perf-mem.data --stdio > perf-mem-report.txt; \
+	fi
+	@echo "Memory profiling report saved to perf-mem-report.txt"
+
 # Full CI pipeline
 ci: all lint tox
 	@echo "=== All CI checks passed! ==="
@@ -55,10 +114,11 @@ clean:
 	@echo "=== Cleaning build directory ==="
 	@rm -rf $(BUILD_DIR)
 
-# Clean everything including Python cache
+# Clean everything including Python cache and perf data
 clean-all: clean
 	@echo "=== Cleaning all build artifacts ==="
 	@rm -rf .tox __pycache__ **/__pycache__ *.egg-info .pytest_cache .coverage
+	@rm -f perf.data perf-mem.data perf-report.txt perf-mem-report.txt
 
 # Show help
 help:
@@ -72,6 +132,16 @@ help:
 	@echo "  lint       - Run static analysis"
 	@echo "  tox        - Run Python tests via tox"
 	@echo "  ci         - Full CI pipeline (build + test + coverage + lint + tox)"
+	@echo "  perf       - Run complete performance analysis (record + report)"
+	@echo "  perf-record - Record performance data (use TARGET=executable for specific binary)"
+	@echo "  perf-report - Generate report from existing perf.data"
+	@echo "  perf-stat  - Get performance statistics (use TARGET=executable for specific binary)"
+	@echo "  perf-mem   - Run memory profiling (use TARGET=executable for specific binary)"
 	@echo "  clean      - Clean build directory"
 	@echo "  clean-all  - Clean all build artifacts"
 	@echo "  help       - Show this help message"
+	@echo ""
+	@echo "Performance profiling examples:"
+	@echo "  make perf                    # Profile all tests"
+	@echo "  make perf-record TARGET=middleware/test_demodulator  # Profile specific test"
+	@echo "  make perf-stat TARGET=cjunk/cjunk_tests             # Get stats for cjunk tests"
