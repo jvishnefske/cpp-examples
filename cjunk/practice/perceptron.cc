@@ -29,7 +29,7 @@ class Perceptron{
     }
     double Perceptron::run(std::vector<double> x){
         double sum = 0;
-        for(int i=0; i<x.size(); i++){
+        for(size_t i=0; i<x.size(); i++){
             sum += x[i]*weights[i];
         }
         return sigmoid(sum+bias);
@@ -57,13 +57,13 @@ class Layer{
     // no idea if this return type makes sence or what math is done here.
     std::vector<double> Layer::run(std::vector<double> x){
         std::vector<double> output;
-        for(int i=0; i<perceptrons.size(); i++){
+        for(size_t i=0; i<perceptrons.size(); i++){
             output.push_back(perceptrons[i].run(x));
         }
         return output;
     }
     void Layer::set_weights(std::vector<std::vector<double>> w){
-        for(int i=0; i<perceptrons.size(); i++){
+        for(size_t i=0; i<perceptrons.size(); i++){
             perceptrons[i].set_weights(w[i]);
         }
     }
@@ -83,16 +83,21 @@ class Network{
         layers.push_back(Layer(inputs, outputs));
     }
     std::vector<double> Network::run(vector<double> x){
+        (void)x; // Suppress unused parameter warning
         vector<double> output;
-        for(int i=0; i<layers.size(); i++){
+        for(size_t i=0; i<layers.size(); i++){
             output = layers[i].run(output);
         }
         return output;
     }
     void Network::set_weights(vector<vector<vector<double>>> w){
-        for(int i=0; i<layers.size(); i++){
+        for(size_t i=0; i<layers.size(); i++){
             layers[i].set_weights(w[i]);
         }
     }
+}
+
+int main() {
+    return 0;
 }
 

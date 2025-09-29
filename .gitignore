@@ -5,6 +5,7 @@
 Testing/
 #vim
 *.swp
+build
 
 #reports 
 coverage.xml
@@ -45,3 +46,4 @@ coverage.xml
 cmake-build*
 .aider*
 .idea
+coverage_report*

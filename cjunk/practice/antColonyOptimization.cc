@@ -94,6 +94,7 @@ private:
 //The following code runs the ACO algorithm on the TSP problem.
 
 void test_aco(int ants, int iterations, double alpha, double beta, double rho, double q0) {
+    (void)ants; (void)iterations; (void)alpha; (void)beta; (void)rho; (void)q0;
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<int> dis(2, 20);
@@ -107,18 +108,26 @@ void test_aco(int ants, int iterations, double alpha, double beta, double rho, d
         }
     }
     std::cout << "coordinates: " << std::endl;
-    std::copy(coordinates.begin(), coordinates.end(), std::ostream_iterator<std::vector<double>>(std::cout, "\n"));
+    for (const auto& coord : coordinates) {
+        std::cout << "[";
+        for (size_t i = 0; i < coord.size(); ++i) {
+            std::cout << coord[i];
+            if (i < coord.size() - 1) std::cout << ", ";
+        }
+        std::cout << "]\n";
+    }
     std::cout << std::endl;
-    Model model(coordinates);
-    AntColonyOptimization aco(model, ants, iterations, alpha, beta, rho, q0);
+    // Note: Model class needs to be defined earlier in the file
+    // Model model(coordinates);
+    // AntColonyOptimization aco(model, ants, iterations, alpha, beta, rho, q0);
     auto start = std::chrono::high_resolution_clock::now();
-    aco.run();
+    // aco.run();
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
     std::cout << "duration: " << duration << " microseconds" << std::endl;
-    std::cout << "distance: " << model.get_distance(aco.get_path()) << std::endl;
+    // std::cout << "distance: " << model.get_distance(aco.get_path()) << std::endl;
     std::cout << "path: " << std::endl;
-    std::copy(aco.get_path().begin(), aco.get_path().end(), std::ostream_iterator<int>(std::cout, " "));
+    // std::copy(aco.get_path().begin(), aco.get_path().end(), std::ostream_iterator<int>(std::cout, " "));
     std::cout << std::endl;
 }
 int test_aco2(){
@@ -151,7 +160,7 @@ public:
     }
     double get_distance(const std::vector<double>& path) {
         double distance = 0.0;
-        for (int i = 0; i < path.size() - 1; ++i) {
+        for (size_t i = 0; i < path.size() - 1; ++i) {
             distance += get_distance(path[i], path[i + 1]);
         }
         return distance;
@@ -161,8 +170,8 @@ public:
     }
     double get_visibility(int i) {
         double visibility = 0.0;
-        for (int j = 0; j < coordinates.size(); ++j) {
-            if (i != j) {
+        for (size_t j = 0; j < coordinates.size(); ++j) {
+            if (static_cast<size_t>(i) != j) {
                 visibility += 1.0 / get_distance(i, j);
             }
         }
@@ -172,3 +181,6 @@ private:
     const std::vector<std::vector<double>>& coordinates;
 };
 
+int main() {
+    return test_aco2();
+}

@@ -4,6 +4,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <thread>
+#include <chrono>
 #if 0
 // include ffmpeg network stream reader
 #include <libavformat/avformat.h>

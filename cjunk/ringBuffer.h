@@ -104,3 +104,5 @@ int test_fifo(){
     info_size(intFifo_size(&tx));
 }
 #endif
+
+#endif

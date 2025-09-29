@@ -16,56 +16,9 @@
 #include <boost/beast/http/status.hpp>
 #include <boost/beast/websocket.hpp>
 #include <boost/beast/http/fields.hpp>
-class Server {
-public:
-    Server(boost::asio::io_context& ioc,
-           std::string const& host,
-           std::string const& port)
-        : acceptor_(ioc)
-        , socket_(ioc)
-        , host_(host)
-        , port_(port)
-    {
-        boost::system::error_code ec;
-        acceptor_.open(boost::asio::ip::tcp::v4(), ec);
-        if (ec)
-        {
-            throw boost::system::system_error(ec);
-        }
-        acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
-        acceptor_.bind(boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port_), ec);
-        if (ec)
-        {
-            throw boost::system::system_error(ec);
-        }
-        acceptor_.listen(boost::asio::socket_base::max_connections, ec);
-        if (ec)
-        {
-            throw boost::system::system_error(ec);
-        }
-    }
-    void run()
-    {
-        acceptor_.async_accept(socket_,
-                               std::bind(&Server::handle_accept, this, std::placeholders::_1));
-    }
-    void handle_accept(boost::system::error_code ec)
-    {
-        if (!ec)
-        {
-            std::make_shared<Session>(std::move(socket_))->start();
-        }
-        socket_.close();
-        acceptor_.async_accept(socket_,
-                               std::bind(&Server::handle_accept, this, std::placeholders::_1));
-    }
-private:
-    boost::asio::ip::tcp::acceptor acceptor_;
-    boost::asio::ip::tcp::socket socket_;
-    std::string host_;
-    std::string port_;
-};
-class Session {
+#include <memory>
+
+class Session : public std::enable_shared_from_this<Session> {
 public:
     Session(boost::asio::ip::tcp::socket socket)
         : socket_(std::move(socket))
@@ -111,23 +64,71 @@ private:
     enum { max_length = 1024 };
     char data_[max_length];
 };
-int main(int argc, char* argv[])
+
+class Server {
+public:
+    Server(boost::asio::io_context& ioc,
+           std::string const& host,
+           std::string const& port)
+        : acceptor_(ioc)
+        , socket_(ioc)
+        , host_(host)
+        , port_(port)
+    {
+        boost::system::error_code ec;
+        acceptor_.open(boost::asio::ip::tcp::v4(), ec);
+        if (ec)
+        {
+            throw boost::system::system_error(ec);
+        }
+        acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+        acceptor_.bind(boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), std::stoi(port_)), ec);
+        if (ec)
+        {
+            throw boost::system::system_error(ec);
+        }
+        acceptor_.listen(boost::asio::socket_base::max_connections, ec);
+        if (ec)
+        {
+            throw boost::system::system_error(ec);
+        }
+    }
+    void run()
+    {
+        acceptor_.async_accept(socket_,
+                               std::bind(&Server::handle_accept, this, std::placeholders::_1));
+    }
+    void handle_accept(boost::system::error_code ec)
+    {
+        if (!ec)
+        {
+            std::make_shared<Session>(std::move(socket_))->start();
+        }
+        socket_.close();
+        acceptor_.async_accept(socket_,
+                               std::bind(&Server::handle_accept, this, std::placeholders::_1));
+    }
+private:
+    boost::asio::ip::tcp::acceptor acceptor_;
+    boost::asio::ip::tcp::socket socket_;
+    std::string host_;
+    std::string port_;
+};
+
+int main()
 {
     try
     {
-        if (argc != 3)
-        {
-            std::cerr << "Usage: websocket_echo_server <address> <port>\n";
-            return 1;
-        }
         boost::asio::io_context ioc;
-        Server s(ioc, argv[1], argv[2]);
+        Server s(ioc, "0.0.0.0", "8080");
         s.run();
+        std::cout << "Server started on port 8080" << std::endl;
         ioc.run();
     }
     catch (std::exception& e)
     {
         std::cerr << "Exception: " << e.what() << "\n";
     }
+    return 0;
 }
 

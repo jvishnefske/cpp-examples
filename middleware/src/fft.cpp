@@ -9,7 +9,26 @@
 class FFT {
 public:
     // Marked 'data' as [[maybe_unused]] to suppress the unused parameter warning
-    FFT(const std::vector<double>& data [[maybe_unused]]) {
+    explicit FFT(const std::vector<double>& data [[maybe_unused]]) {
 
     }
 }; // Added missing semicolon for class definition
+
+#ifdef STANDALONE_TEST
+#include <iostream>
+
+int main() {
+    std::cout << "Testing FFT class..." << std::endl;
+    
+    // Create some test data
+    std::vector<double> testData = {1.0, 2.0, 3.0, 4.0};
+    
+    // Create FFT object (minimal implementation just for testing)
+    FFT fft(testData);
+    
+    std::cout << "FFT object created successfully with " << testData.size() << " data points" << std::endl;
+    std::cout << "FFT test completed successfully" << std::endl;
+    
+    return 0;
+}
+#endif

@@ -1,59 +1,43 @@
-#include <regex>
-#include <future>
+// Simplified parser using trivialJson instead of external JsonCpp
 #include <iostream>
-#include <fstream>
-#include <sstream>
-//include json::Value header
-#include "json/json.h"
-#include <asio.hpp>
+#include "json.hpp"
 
+// The parse_json function is now provided by the Json::Reader compatibility layer
+// No additional wrapper needed since Json::Value is aliased to Node
 
-Json::Value parse_json(const std::string& json_string)
-{
-    Json::Value root;
-    Json::Reader reader;
-    bool parsingSuccessful = reader.parse(json_string, root);
-    if (!parsingSuccessful)
-    {
-        throw std::runtime_error("Failed to parse JSON: " + reader.getFormattedErrorMessages());
+#ifdef STANDALONE_TEST
+#include <iostream>
+
+int main() {
+    std::cout << "Testing trivialJson parser..." << std::endl;
+    
+    try {
+        std::string test_json = "{\"key\": \"value\", \"number\": 42}";
+        Json::Value result;
+        Json::Reader reader;
+        bool success = reader.parse(test_json, result);
+        if (success) {
+            std::cout << "JSON parsing test passed" << std::endl;
+            std::cout << "Result: " << result.serialize() << std::endl;
+        } else {
+            std::cout << "JSON parsing failed: " << reader.getFormattedErrorMessages() << std::endl;
+            return 1;
+        }
+        
+        // Test JsonBuilder
+        JsonBuilder builder;
+        builder.start_object()
+               .add_string_field("test", "data")
+               .add_int_field("id", 100)
+               .end_object();
+        Node built = builder.build();
+        std::cout << "JsonBuilder test: " << built.serialize() << std::endl;
+        
+    } catch (const std::exception& e) {
+        std::cout << "JSON parsing test failed: " << e.what() << std::endl;
+        return 1;
     }
-    return root;
+    
+    return 0;
 }
-// http client
-class http_client
-{
-    public:
-    http_client(asio::io_context& io_context, const std::string& host, const std::string& port)
-        : resolver_(io_context), socket_(io_context)
-    {
-        asio::ip::tcp::resolver::query query(host, port);
-        resolver_.async_resolve(query, [this](const asio::error_code& ec, asio::ip::tcp::resolver::iterator endpoint_iterator)
-        {
-            if (!ec)
-            {
-                asio::async_connect(socket_, endpoint_iterator, [this](const asio::error_code& ec, asio::ip::tcp::resolver::iterator)
-                {
-                    if (!ec)
-                    {
-                        do_read();
-                    }
-                });
-            }
-        });
-    }
-
-    void do_read()
-    {
-        auto self(shared_from_this());
-        socket_.async_read_some(asio::buffer(data_, max_length),
-            [this, self](std::error_code ec, std::size_t length)
-            {
-                if (!ec)
-                {
-                    std::cout.write(data_, length);
-                    do_read();
-                }
-            });
-    }
-
-};
+#endif
