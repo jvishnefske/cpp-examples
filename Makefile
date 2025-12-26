@@ -21,9 +21,9 @@ test: build
 # Generate coverage report using gcov/lcov
 coverage: test
 	@mkdir -p $(BUILD_DIR)/coverage
-	@lcov --capture --directory $(BUILD_DIR) --output-file $(BUILD_DIR)/coverage/coverage.info --ignore-errors mismatch
-	@lcov --remove $(BUILD_DIR)/coverage/coverage.info '/usr/*' '*/thirdparty/*' '*/_deps/*' --output-file $(BUILD_DIR)/coverage/coverage.info --ignore-errors unused
-	@genhtml $(BUILD_DIR)/coverage/coverage.info --output-directory $(BUILD_DIR)/coverage/html
+	@lcov --capture --directory $(BUILD_DIR) --output-file $(BUILD_DIR)/coverage/coverage.info --ignore-errors mismatch,source,gcov
+	@lcov --remove $(BUILD_DIR)/coverage/coverage.info '/usr/*' '*/thirdparty/*' '*/_deps/*' --output-file $(BUILD_DIR)/coverage/coverage.info --ignore-errors unused,source
+	@genhtml $(BUILD_DIR)/coverage/coverage.info --output-directory $(BUILD_DIR)/coverage/html --ignore-errors source || true
 	@echo "Coverage report generated at $(BUILD_DIR)/coverage/html/index.html"
 
 # Clean build artifacts
